@@ -1,0 +1,222 @@
+[
+  {
+    "id": "q-s13-01",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "What is the single invariant that governs all prompt caching behavior?",
+    "options": [
+      "Caching applies to any request content, wherever it appears",
+      "Caching is an exact prefix match — the key is the rendered request up to a breakpoint, and a single changed byte invalidates everything after it",
+      "Caching matches semantically similar prompts",
+      "Caching applies per message, independently"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Only the prefix up to a breakpoint is reusable — position matters totally.",
+      "This one rule explains every caching failure: most are not missing markers but unstable prefixes. A byte of drift anywhere kills everything downstream of it.",
+      "There is nothing semantic about it — byte equality or nothing.",
+      "The unit is the cumulative rendered prefix, not individual messages."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 13 > What to Know (exact prefix match)"
+  },
+  {
+    "id": "q-s13-02",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In what order does a request render for cache-matching purposes, and why does changing the tool set mid-conversation hurt so much?",
+    "options": [
+      "Messages, then system, then tools — tool changes only affect the tail",
+      "Order is configurable per request",
+      "Alphabetically by field name",
+      "Tools, then system prompt, then messages — tools render at position zero, so a tool set change invalidates the ENTIRE cached prefix (and caches are model-scoped, so model switches do the same)"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Backwards — tools render first, making them the most invalidating thing to change.",
+      "Render order is fixed by the API.",
+      "It renders by structure, not alphabetically.",
+      "Position zero means maximum blast radius. \"Modes\" implemented by swapping tool sets are cache-hostile — pass the mode as message content instead."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > Designing for Cache Stability"
+  },
+  {
+    "id": "q-s13-03",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which of these does NOT silently invalidate a cached prefix?",
+    "options": [
+      "Serializing the tool list as JSON with sorted keys on every request",
+      "A \"current date\" string interpolated into the system prompt",
+      "Building the tool list from an unordered collection",
+      "A per-session ID early in the prompt"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Deterministic serialization is the FIX, not the problem — same bytes every render.",
+      "The classic cache-killer: every request becomes a unique prefix.",
+      "Non-deterministic ordering means byte-different renders of identical content.",
+      "Session IDs early in the prompt prevent sharing across requests (and users)."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 13 > Designing for Cache Stability (silent invalidators)"
+  },
+  {
+    "id": "q-s13-04",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which statement about cache breakpoints and TTLs is TRUE?",
+    "options": [
+      "Unlimited breakpoints; entries last 24 hours",
+      "One breakpoint per request; entries never expire",
+      "Up to four breakpoints per request; default TTL is five minutes (one-hour option at higher write cost); prefixes below a model-dependent minimum size are silently not cached at all",
+      "Breakpoints are placed automatically by the API"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Both numbers are wrong — small breakpoint budget, short default TTL.",
+      "Entries expire quickly by default; that's central to the economics.",
+      "The silent minimum is the trap: markers on a too-small prefix simply do nothing, with no error. Place breakpoints at stability boundaries — end of system prompt, most recent turn.",
+      "You place `cache_control` markers explicitly."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > Breakpoints and Verification"
+  },
+  {
+    "id": "q-s13-05",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "How do you VERIFY caching is actually working, rather than assuming the markers do their job?",
+    "options": [
+      "Watch overall latency — cached requests are visibly faster",
+      "Check the response usage block, which reports cache writes and cache reads separately from uncached input — zero reads across repeated identical-prefix requests means a silent invalidator",
+      "Trust the SDK to raise an error if caching fails",
+      "Compare monthly bills before and after"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Latency varies for many reasons; it's an unreliable proxy.",
+      "Cache behavior is directly observable per request. The diagnostic when reads are zero: byte-diff two consecutive rendered requests to find the invalidator.",
+      "Cache misses are silent — no error is ever raised.",
+      "A monthly signal for a per-request mechanism is far too slow a feedback loop."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > Breakpoints and Verification"
+  },
+  {
+    "id": "q-s13-06",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "What are the economics of prompt caching in round numbers?",
+    "options": [
+      "Writes are free; reads cost double normal input",
+      "Both writes and reads cost more than normal input — caching pays off only at extreme volume",
+      "Reads are free forever once written",
+      "Writes cost slightly more than normal input; reads cost a small fraction of it — caching pays for itself by the second hit, and traffic arriving more often than the TTL keeps the cache warm by itself"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Writes carry a modest premium — they aren't free.",
+      "Payback arrives at hit two, not at extreme volume.",
+      "Reads are dramatically cheaper (~an order of magnitude), not free, and entries expire.",
+      "Corollary: a prefix that never repeats gains nothing — markers on it only pay write premiums. Do not cache what never repeats."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 13 > Breakpoints and Verification (economics)"
+  },
+  {
+    "id": "q-s13-07",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A conversation no longer fits in the context window. Someone suggests enabling prompt caching to fix it. What is the correct response?",
+    "options": [
+      "Caching changes cost, not capacity — an over-long request still doesn't fit; the fixes are compaction, trimming, or summarization",
+      "Good idea — cached tokens don't count against the window",
+      "Good idea, but only with the one-hour TTL",
+      "It works if breakpoints are placed every thousand tokens"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Wrong lever for the constraint. Cached input is cheaper to process, but it's still input in the window.",
+      "Cached tokens fully count against the context window.",
+      "TTL affects reuse economics, not capacity.",
+      "No breakpoint arrangement changes the window size."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > When Caching Is the Answer (and When It Is Not)"
+  },
+  {
+    "id": "q-s13-08",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "Match the cost lever to the actual constraint: repeated expensive prefix / deferrable volume / over-tiered capability / bloated unique content.",
+    "options": [
+      "Trim / cache / batch / smaller model",
+      "Batch / cache / trim / smaller model",
+      "Cache / batch / smaller model / trim — each lever addresses exactly one kind of expense, and they compose (batched requests support caching; a cheaper model with a warm cache is often cheapest of all)",
+      "Smaller model for all four — capability is the only real cost"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Trimming a repeated prefix loses content that caching would have made nearly free.",
+      "Batching doesn't reward repetition; caching doesn't reward deferrability.",
+      "The matching discipline is the exam skill: identify what is actually expensive, then pick the lever built for it. Composability means the answer is often \"two of these together.\"",
+      "Model tier is one lever among four — it does nothing for a repeated prefix or deferrable volume."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > When Caching Is the Answer (lever matching)"
+  },
+  {
+    "id": "q-s13-09",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A high-traffic cached agent needs per-user state (current plan, recent events) in context. Where does it go?",
+    "options": [
+      "Interpolated into the system prompt, where state belongs",
+      "Injected late in the context — after the last breakpoint, near the latest turn — keeping the system prompt frozen so the shared prefix stays cacheable",
+      "In the tool definitions, which are always loaded",
+      "Nowhere — cached agents cannot carry per-user state"
+    ],
+    "answer": 1,
+    "rationales": [
+      "On a cached agent, rewriting the system prompt per user or per event re-processes the entire conversation uncached.",
+      "Order by stability: frozen tools and system prompt up front, volatile state after the last breakpoint. Users share the cached prefix; each request pays only for its own volatile tail.",
+      "Tool definitions render at position zero — the most cache-hostile location available.",
+      "State is fine; its position is what matters."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > Designing for Cache Stability (state placement)"
+  },
+  {
+    "id": "q-s13-10",
+    "section": 13,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "Roughly how much cheaper is reading cached tokens versus processing them fresh?",
+    "options": [
+      "About an order of magnitude cheaper, while cache writes carry a modest premium over normal input",
+      "About 10% cheaper",
+      "Exactly half price",
+      "Free"
+    ],
+    "answer": 0,
+    "rationales": [
+      "That scale is why caching often beats model choice and prompt trimming as the first cost lever for repeated-prefix workloads.",
+      "Far too small — the read discount is dramatic.",
+      "Half-off is the BATCH discount; don't mix the two levers' numbers.",
+      "Cheap, not free."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 13 > What to Know (economics)"
+  }
+]

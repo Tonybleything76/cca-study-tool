@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s07-01",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "In MCP, who controls tools, resources, and prompts respectively?",
+    "options": [
+      "All three are model-controlled",
+      "Tools are model-controlled (actions to invoke); resources are application-controlled (context to provide); prompts are user/application-controlled (reusable workflows)",
+      "Tools are user-controlled; resources are model-controlled; prompts are server-controlled",
+      "Control is negotiated per session between client and server"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Only tools are invoked at the model's discretion.",
+      "The control model is the point: the model decides to act (tools), the application decides what context to supply (resources), users/applications invoke reusable templates (prompts).",
+      "Backwards on the first two.",
+      "The control assignments are part of the protocol design, not per-session negotiation."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > What to Know (feature table)"
+  },
+  {
+    "id": "q-s07-02",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An MCP server for an internal API should expose the API's reference documentation and a way to place live orders. What is the right split?",
+    "options": [
+      "Both as tools — everything an agent touches is a tool",
+      "Both as resources — servers should minimize tool count",
+      "Documentation as a prompt template; orders as a resource",
+      "Documentation as a resource (stable reference consulted before acting); order placement as a tool (dynamic action at moment of use)"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Making reference material a tool forces a call just to learn what's true — the schema-fetch tax.",
+      "A resource can't place an order; replacing tools with resources prevents acting at all.",
+      "Prompts are reusable workflows, not documentation storage; and orders are the canonical tool case.",
+      "Resources for what is true and stable; tools for computation and change. Complements, not alternatives — good servers expose both."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 7 > What to Know (resource vs tool decision rule)"
+  },
+  {
+    "id": "q-s07-03",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Agents struggle to pick among many similar tools across connected servers. Someone proposes one natural-language entry tool that re-routes requests to the underlying tools. Why is this the wrong fix?",
+    "options": [
+      "The aggregator hides the real tool surface from the model and tends to produce worse selection — improve descriptions and use progressive availability instead",
+      "Natural-language routing is prohibited by the MCP specification",
+      "Aggregators cannot pass parameters through to underlying tools",
+      "It works, but only for read-only tools"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The model selects well when it can see accurate, distinct descriptions of a manageable surface. An opaque router replaces informed selection with a second, hidden selection problem.",
+      "Nothing prohibits it — it's just an anti-pattern.",
+      "Parameter passing is possible; the problem is the hidden decision, not plumbing.",
+      "Read-only vs mutating isn't the issue; visibility of the real surface is."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > What to Know (aggregator anti-pattern)"
+  },
+  {
+    "id": "q-s07-04",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When is building an MCP server clearly worth it over a custom in-app tool?",
+    "options": [
+      "Whenever any external system is involved",
+      "When the integration must be fastest possible — MCP adds no overhead",
+      "When multiple AI clients or applications need the same integration — expose it once, reuse everywhere",
+      "When the workflow is deeply specific to a single application"
+    ],
+    "answer": 2,
+    "rationales": [
+      "External access alone doesn't require a protocol layer — a custom tool can call any API.",
+      "MCP's value is reuse and standardization, not raw speed.",
+      "Five AI tools needing the same ticketing data is the MCP sweet spot: one server, many clients.",
+      "That's the case for a custom tool inside the application — simpler than standing up a server."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 7 > Why MCP"
+  },
+  {
+    "id": "q-s07-05",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A team adopts MCP and assumes authentication, rate limiting, retries, and caching are now handled. What is the reality?",
+    "options": [
+      "Correct — the protocol includes middleware for all four",
+      "MCP is a protocol, not a middleware platform — auth, rate limiting, retries, caching, authorization, and performance remain your system design responsibilities",
+      "The client library handles them if configured",
+      "Only authentication is included; the rest is yours"
+    ],
+    "answer": 1,
+    "rationales": [
+      "The protocol standardizes how capabilities are exposed, not how they're operated.",
+      "MCP solves the integration-shape problem. Everything operational still has to be designed and built — same as any service.",
+      "Client libraries implement the protocol; they don't run your infrastructure concerns.",
+      "Not even auth comes free — it must be designed into the server."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > Why MCP (limits)"
+  },
+  {
+    "id": "q-s07-06",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An agent keeps using generic shell commands instead of a connected server's specialized dependency-analysis tool. What is the most likely fix?",
+    "options": [
+      "Improve the MCP tool's description — when it beats generic alternatives, inputs/outputs, examples, key capabilities like transitive analysis",
+      "Remove the shell tool so the agent has no alternative",
+      "Rename the MCP tool to sort first alphabetically",
+      "Increase the server's connection priority"
+    ],
+    "answer": 0,
+    "rationales": [
+      "MCP tools compete with built-ins in one registry — the description is the tool's case for being chosen. \"Analyzes code\" loses to a familiar generic; a description explaining its edge wins.",
+      "The agent often legitimately needs generic tools too; removal breaks other work.",
+      "Alphabetical position isn't a selection signal.",
+      "No such priority mechanism drives model tool choice."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 7 > Tool Discovery and Selection"
+  },
+  {
+    "id": "q-s07-07",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A host auto-allows any MCP tool advertising `readOnlyHint: true`, skipping its confirmation flow. What is wrong with this policy?",
+    "options": [
+      "Nothing — that is exactly what annotations are for",
+      "readOnlyHint doesn't exist; the standard hints are different",
+      "Read-only tools still consume rate limits, so confirmation is always required",
+      "Annotations are untrusted self-reports — a malicious or buggy server can label a destructive tool read-only; use annotations to pick which prompt to show, never to skip a security check policy requires"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Annotations inform UI affordances; they are not a security boundary.",
+      "`readOnlyHint` is a standard hint, alongside destructive, idempotent, and open-world hints.",
+      "Rate limits aren't the issue — trust is.",
+      "Base real permission decisions on server trust level, user policy, tool identity, and actual operation risk. The server grading its own homework doesn't count."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > Tool Annotations and Trust"
+  },
+  {
+    "id": "q-s07-08",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "What is the practical rule for choosing between a JSON-RPC protocol error and a tool result with `isError: true` — and what goes wrong with each misuse?",
+    "options": [
+      "Always prefer protocol errors; they're more visible to operators",
+      "Use whichever produces the shorter message",
+      "Failure before the tool's business logic could execute → protocol error; the tool reached its target and the operation failed → `isError: true`. Misusing `isError` for missing parameters makes the agent retry the same bad call; putting a 503 in a protocol error stops the agent from retrying later",
+      "Protocol errors for reads, isError for writes"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Protocol errors don't reach the model as adaptable results — overusing them blinds the agent.",
+      "Message length is irrelevant to the semantics.",
+      "The boundary is where the failure occurred, and each misclassification causes a specific agent misbehavior — pointless identical retries, or abandoned retries that would have succeeded.",
+      "Read/write isn't the distinction; execution stage is."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > MCP Error Handling"
+  },
+  {
+    "id": "q-s07-09",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A host connects dozens of MCP servers. Which two mechanisms keep the tool surface manageable without a session restart when capabilities change?",
+    "options": [
+      "Tool aliasing and schema compression",
+      "Tool search / progressive availability (pull tool definitions on demand per task), and `list_changed` notifications (servers announce changed tool sets so clients refresh)",
+      "Connection pooling and lazy handshakes",
+      "A master server that proxies all the others"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Neither is an MCP surface-management mechanism.",
+      "Progressive availability spends context only on tools about to be used; `list_changed` lets a new capability appear mid-session. Design consequence: write descriptions that read well in isolation, since tools may be discovered via search.",
+      "Transport-level concerns; they don't shrink the model's tool surface.",
+      "That's the aggregator anti-pattern wearing a trench coat."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > Tool Search and Progressive Availability"
+  },
+  {
+    "id": "q-s07-10",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In Claude Code, where should (a) a documentation server the whole team needs and (b) a server needing your personal API credentials be configured?",
+    "options": [
+      "Both in `.mcp.json` so configuration stays in one place",
+      "Both in user scope for maximum availability",
+      "(a) user scope; (b) project scope",
+      "(a) project scope — `.mcp.json` at the repo root, checked in; (b) local or user scope inside `~/.claude.json`, where credentials stay on your machine"
+    ],
+    "answer": 3,
+    "rationales": [
+      "`.mcp.json` is checked into version control — personal credentials in it leak to everyone who clones.",
+      "User scope hides the team server from teammates, who each must configure it manually.",
+      "Backwards: the shared server belongs in the shared file; the credentialed one must stay private.",
+      "Scope = visibility: project scope is shared via the repo; local and user scopes live in `~/.claude.json` and never leave the developer's machine."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 7 > MCP in Claude Code (scopes)"
+  },
+  {
+    "id": "q-s07-11",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "The same MCP server name exists at local, project, and user scope with different configurations. What does Claude Code do?",
+    "options": [
+      "Connects once using the local definition — precedence is local > project > user, and the entire winning entry is used with no field merging",
+      "Connects three times, once per scope",
+      "Merges the three configurations field by field",
+      "Refuses to start until the collision is resolved"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The precedence is deliberate: your local definition can point at a staging endpoint without touching the team's `.mcp.json`. One connection, whole-entry wins.",
+      "Name collisions resolve to a single connection, not three.",
+      "Fields are never merged across scopes — partial-override setups silently don't work.",
+      "Collisions are resolved by precedence, not treated as errors."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > MCP in Claude Code (scope precedence)"
+  },
+  {
+    "id": "q-s07-12",
+    "section": 7,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "How do MCP prompts appear to users in Claude Code?",
+    "options": [
+      "As automatic behaviors the model applies silently",
+      "As entries in the settings menu",
+      "As slash commands, typically named `mcp__<server>__<prompt>` to disambiguate across servers",
+      "They are not accessible in Claude Code"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Prompts are user/application-invoked, not silent model behavior.",
+      "They surface in the command interface, not settings.",
+      "The naming pattern tells you which server a prompt came from when several are connected.",
+      "They are fully supported — as slash commands."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 7 > MCP in Claude Code (prompts as slash commands)"
+  }
+]

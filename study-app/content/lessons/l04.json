@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-04",
+    "section": 4,
+    "title": "Structured Data Extraction and Validation",
+    "minutes": 9,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>Extraction means turning messy documents — invoices, contracts, listings — into clean structured data. The goal is not \"valid JSON.\" It's data that is <strong>syntactically valid, semantically correct, traceable to its source, and safe for downstream systems</strong>. A schema can prove a field is a number; it can never prove the document actually said that number.</p><p>The most important design insight is about incentives: <strong>a required field the source might not contain pressures the model to invent a value</strong>. If listings often omit lot size but your schema demands one, you will get plausible fabricated lot sizes — schema-legal and wrong. The fix is making absence representable: nullable fields, empty-vs-null distinctions (\"no pros mentioned\" vs \"pros not addressed\"), an <code>unclear</code> enum value for ambiguous cases, and an <code>other</code> + detail-field escape hatch for evolving categories.</p><p>Tempted to add a second \"verification\" LLM call? It's usually inferior: it adds cost, can rationalize the original invention, and leaves the schema pressure in place. Fix the incentive; keep verification passes for sampling-based audits.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>A contract says the notice period is 60 days — then Amendment 2 changes it to 45. A single <code>termination_notice_days</code> scalar is the wrong schema. High-stakes extraction carries <strong>provenance</strong>: value, <code>source_location</code> (\"Amendment 2, section 4\"), <code>source_quote</code>, and effective date, with original and amended values captured separately. Reviewers can then audit every choice against the actual text. (Note: API citations and strict JSON structured outputs may be incompatible — represent source locations as schema fields instead.)</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Validation and scale patterns the exam probes:</p><ul><li><strong>Semantic validation</strong> beyond the schema: totals reconcile, dates in range, IDs match known formats. Add reconciliation fields (<code>calculated_total</code>, <code>stated_total</code>, <code>totals_match</code>) so mismatches flag mechanically.</li><li><strong>Correction requests</strong>: source + previous extraction + exact errors. The one unfixable case: the information was never in the provided context — no retry helps; retrieve the source or route to human review.</li><li><strong>Scattered long documents</strong>: when the doc fits in context but facts are buried, a pre-extraction pass (surface decisions, amounts, dates into an intermediate) beats both chunking (loses cross-section links) and more few-shot examples (don't help find needles).</li><li><strong>Automation thresholds</strong>: segment accuracy by document type, field, and confidence band first — 97% overall can hide an 80% segment. Keep stratified sampling after launch.</li><li><strong>Batch</strong>: join results by <code>custom_id</code>, resubmit only failures, route urgent documents to real-time per-document.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Required-but-absent fields manufacture hallucinations; make absence representable.",
+          "Schema compliance ≠ source truth — semantic validation in code is still mandatory.",
+          "Amendments and conflicts demand provenance fields, not scalars.",
+          "Scattered facts in long docs → pre-extraction pass into a structured intermediate.",
+          "Segment accuracy before auto-approving anything; aggregates lie."
+        ]
+      }
+    ],
+    "resources": ["r-04", "r-19", "r-18"]
+  }
+]

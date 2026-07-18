@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-03",
+    "section": 3,
+    "title": "Error Handling in Agent Tools",
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>When a tool fails, the error message isn't just diagnostics — it's <strong>instructions to the agent about what to do next</strong>. A vague \"Error: try again\" forces the model to guess: retry? ask the user? give up? Production tools classify their failures so the agent's next move is obvious.</p><p>Five categories cover nearly everything: <em>transient infrastructure</em> (timeout, 503 — retry inside the tool), <em>permanent validation</em> (bad date, malformed ID — tell the agent exactly what's wrong so it can fix the input), <em>business rule</em> (not eligible — non-retryable, explain to the user), <em>permission</em> (no access — non-retryable, offer the escalation path), and the dangerous one: <em>uncertain write state</em>.</p><p>The rule of thumb for retries: put retry logic <strong>where the information to fix the problem lives</strong>. The tool knows a timeout is transient — it retries. Only the model can fix a bad filter string — surface it. Only a human can authorize risking a duplicate charge — escalate it.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Your <code>send_invoice_email</code> tool calls a mail API that sometimes times out <em>after</em> the send was submitted. If the tool says \"Error: timeout, please retry,\" the agent retries — and the customer gets two invoices. The right return communicates uncertainty: \"Delivery status unknown. The message may have been sent. Do not retry without an idempotency check — verify via status lookup or ask the user.\" Read-side timeouts and write-after-submission timeouts are <em>inverses</em>: the first is safe to retry, the second may duplicate a real-world effect.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>MCP adds a two-tier error model that exams love:</p><ul><li><strong>Protocol errors</strong> (JSON-RPC): the call itself was invalid — unknown tool, missing schema-required parameter. The failure happened <em>before business logic ran</em>.</li><li><strong>Tool execution errors</strong> (<code>isError: true</code>): the tool ran and the operation failed — upstream 404, 503, permission denial, business rule.</li></ul><p>Misusing the tiers causes specific misbehavior: missing-parameter failures shoved into <code>isError</code> make agents retry identical bad calls; a 503 raised as a protocol error stops the agent from retrying something that would have succeeded later. Also memorize the pitfalls: never return an empty list for a backend failure (it reads as \"success, nothing found\"), and never throw exceptions for expected business errors (frameworks hide the details from the model).</p>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Classify failures — the category tells the agent its next move.",
+          "Retry lives where the fix lives: tool (transient), model (bad inputs), human (risky side effects).",
+          "Write-after-submission timeout = uncertain state: report uncertainty, block auto-retry, verify.",
+          "MCP: protocol error before business logic; isError: true when the operation failed.",
+          "Empty results mean 'nothing found,' never 'the API failed.'"
+        ]
+      }
+    ],
+    "resources": ["r-32"]
+  }
+]

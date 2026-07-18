@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-05",
+    "section": 5,
+    "title": "Conversation Context Management",
+    "minutes": 9,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>Because the API is stateless, every request is a fresh decision: <strong>what does the model need to see right now?</strong> Context management is that decision, made systematically. Send everything forever and sessions get slow, expensive, and unfocused; trim carelessly and the assistant forgets the user's allergy.</p><p>The key insight is that conversation content isn't one kind of thing. Safety-critical exact facts (allergies, dosages), revisable preferences (budget, dietary choice), and disposable chit-chat need <em>different treatments</em>: a protected <strong>reference section</strong> that never gets summarized, a <strong>structured state object</strong> updated on every revision, and <strong>summarization</strong> with recent turns kept verbatim. Applying one policy to all three is how exact facts get blurred away.</p><p>A big context window doesn't save you from this work — <strong>capacity is not attention</strong>. Fitting in the window doesn't make every detail equally salient; stale and verbose content dilutes what matters.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>A meal-planning session, forty turns in: allergies stated early, \"make everything vegetarian\" stated in the middle, timing chat everywhere. Doubling the sliding window from 20 to 40 turns just defers the failure. The robust design: allergies and serving counts live in a retained reference section; current preferences live in a state object updated on each revision (\"single source of current truth\" — far more reliable than a \"prioritize recent statements\" instruction); the general discussion gets a structured summary (Decisions / Preferences / Open questions / Facts — never vague prose); the last few turns stay verbatim. And when a user states genuinely conflicting goals, surface the contradiction — don't silently average.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Patterns for specific traffic shapes:</p><ul><li><strong>Sliding window</strong> is right when logs show old turns are rarely referenced; also apply one <em>specifically to accumulated RAG results</em> (keep the last 2–3 retrievals).</li><li><strong>Precision after summarization</strong>: when users ask for exact numbers your summaries blurred, re-inject relevant source sections on demand — lighter than a full fact store, tighter than \"higher-fidelity summaries.\"</li><li><strong>Tool result compression</strong>: keep task-relevant fields, drop 40-field payloads.</li><li><strong>API-native mechanisms</strong>: compaction <em>summarizes</em> old history server-side; context editing <em>prunes</em> stale tool results. Great for \"keep the session alive\"; application-level structures still own must-survive-verbatim facts. The <code>model_context_window_exceeded</code> stop reason is your trigger to compact — never retry unchanged.</li><li><strong>Returning users</strong>: start fresh with a structured summary + fresh lookups. Agents cite stale tool results despite instructions not to.</li><li><strong>External updates mid-chat</strong>: inject fresh state into the next request, clearly outranking older tool results.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Different content kinds need different retention: reference section, state object, summary, verbatim recent turns.",
+          "Structured state beats 'prioritize recent preferences' instructions every time.",
+          "Summaries must extract decisions and facts — vague narrative loses what users ask about.",
+          "Compaction summarizes, context editing prunes; app-level structures guard verbatim facts.",
+          "Stale tool results are landmines: returning sessions get summaries + fresh lookups."
+        ]
+      }
+    ],
+    "resources": ["r-13", "r-14", "r-01"]
+  }
+]

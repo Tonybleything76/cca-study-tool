@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-01",
+    "section": 1,
+    "title": "API Fundamentals and Output Control",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>When an app talks to Claude, it sends a web request and gets a response — and then Claude forgets the whole exchange. This is the single most important fact in this section: <strong>the API is stateless</strong>. Claude has no memory between calls. If your app wants Claude to \"remember\" that the user's name is Dana, the app must store that fact itself and include it in the next request.</p><p>Think of it like calling a very smart consultant who has amnesia between phone calls. Every call, you must re-read them the case file. The consultant is brilliant — but only about what's in front of them right now. A <code>session_id</code> is just a label on your own filing cabinet; it helps <em>you</em> find the case file, but the consultant never sees the cabinet.</p><p>The second big idea: when you need Claude's answer in a machine-readable format (say, JSON your database can ingest), asking nicely in the prompt is not a guarantee. The reliable approach is <strong>schema-backed output</strong> — telling the API the exact shape the answer must have, so the shape is enforced rather than requested.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Imagine building an invoice reader. You could prompt: \"Respond ONLY with valid JSON.\" It works 98% of the time — and the other 2%, Claude adds a friendly sentence or wraps the JSON in a code fence, and your parser crashes at 2am. The fix is structural: define the invoice fields as a schema using <em>structured outputs</em> (<code>output_config.format</code>) or a <em>tool definition</em>, and the API constrains the response to match. You also control <em>whether</em> Claude uses tools with <code>tool_choice</code>: <code>auto</code> means \"tool optional,\" <code>any</code> means \"must use one of these tools,\" a named tool means \"must use exactly this one,\" and <code>none</code> disables tools.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Exam-level distinctions to hold onto:</p><ul><li>System prompts go in the top-level <code>system</code> parameter, not a \"system\" role message.</li><li>Long conversations get slower and pricier because the <em>whole history is resent as input tokens every turn</em> — not because of a model defect.</li><li>\"Partial assistant prefill\" (ending a request with a half-written assistant message) is legacy: current models return a validation error. Replacements: structured outputs for format, enum fields for labels, system-prompt instructions for suppressing preamble.</li><li>Schemas cost tokens. A 2,500-token tool schema plus a long document can approach the context limit, degrading accuracy near the document's end — the root cause is total context consumption.</li><li>When an extraction fails semantic validation, don't blindly retry: send back the source, the invalid extraction, and the exact validation errors. That feedback loop beats retries and beats <code>temperature: 0</code>.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "The API is stateless — your app owns memory, and `session_id` means nothing to the model.",
+          "Schema-backed output (structured outputs or tool use) beats prompt-requested JSON every time.",
+          "`tool_choice`: `auto` = optional, `any` = must use some tool, named = must use that tool, `none` = no tools.",
+          "Long-session cost growth = input tokens resent every turn.",
+          "Validation failed? Feed back source + extraction + exact errors, don't blind-retry."
+        ]
+      }
+    ],
+    "resources": ["r-01", "r-02", "r-04"]
+  }
+]

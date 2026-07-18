@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s04-01",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "An extraction schema marks `attendee_count` as required, but many source articles never state attendance. What does this schema design cause?",
+    "options": [
+      "Validation errors on every article without a count",
+      "The extractor skips those articles entirely",
+      "Structural pressure to fabricate — the model must produce some value, so it invents plausible ones",
+      "Slower extraction while the model searches for the value"
+    ],
+    "answer": 2,
+    "rationales": [
+      "The output will validate fine — that's the problem. The invented number is schema-legal.",
+      "Extraction still runs; the schema just forces a value into the field.",
+      "A required field the source may not contain converts honest absence into invention. Make it optional or nullable so the model can say `null` truthfully.",
+      "Latency isn't the failure mode; fabricated data is."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Schema Design / Reducing Fabrication"
+  },
+  {
+    "id": "q-s04-02",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An equipment classifier uses a strict enum (`laptop`, `monitor`, `printer`), but new device categories keep appearing and validation failures pile up. What is the standard fix?",
+    "options": [
+      "Add an `other` enum value paired with a detail field capturing the source's actual wording",
+      "Remove the enum and accept free-text categories",
+      "Retrain reviewers to map new devices onto the closest existing category",
+      "Regenerate the schema weekly from observed categories"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The `other` + `*_detail` pattern handles long-tail categories without schema rewrites: stable categories stay machine-usable, novel ones preserve source wording for later normalization.",
+      "Free text loses the machine-usability the enum existed to provide.",
+      "Forcing wrong categories corrupts data to satisfy the schema — the inverse of fixing it.",
+      "Constant schema churn breaks every consumer downstream; the escape hatch avoids the churn entirely."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 4 > Schema Design (enum escape hatch)"
+  },
+  {
+    "id": "q-s04-03",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Reviewers find fabricated values in extractions, and the team proposes a second LLM call to verify each extraction against the source. Why is this generally inferior to fixing the schema?",
+    "options": [
+      "Verification calls only work on documents under 10 pages",
+      "Two calls double the rate limit consumption, which providers prohibit",
+      "Verification models use different tokenizers, causing mismatches",
+      "It adds cost and latency, can rationalize the original answer, and leaves the root cause — a schema demanding values the source lacks — untouched; allowing `null` lets the first call signal absence directly"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Document length isn't the issue.",
+      "Nothing prohibits it — it's just an expensive non-fix.",
+      "Tokenizers are irrelevant here.",
+      "The fabrication is caused by the schema's demand. A verifier can hallucinate too, and agrees with plausible inventions. Fix the incentive; keep verification passes as sampling-based audits on already-good pipelines."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 4 > Reducing Fabrication (verification call)"
+  },
+  {
+    "id": "q-s04-04",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "For a review-summarization schema, when should `pros` be `null` rather than an empty array?",
+    "options": [
+      "Never — empty arrays and null are interchangeable",
+      "When the document didn't address pros at all — an empty array claims \"the reviewer mentioned no pros,\" which is a different assertion",
+      "When the array would exceed five items",
+      "When the review is positive overall"
+    ],
+    "answer": 1,
+    "rationales": [
+      "They encode different claims, and downstream consumers will treat them differently.",
+      "Absence semantics matter: empty array = \"explicitly none,\" null = \"not addressed.\" Choosing deliberately keeps extractions honest for short or partial sources.",
+      "Size has nothing to do with the null/empty distinction.",
+      "Overall sentiment doesn't change what the document did or didn't address."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Reducing Fabrication (null vs empty array)"
+  },
+  {
+    "id": "q-s04-05",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Contracts contain amendments, and different sections state conflicting notice periods. Reviewers must audit every extracted value. What does the schema need?",
+    "options": [
+      "Higher-confidence extraction with `temperature: 0`",
+      "A post-processing step that picks the most common value",
+      "Provenance fields — `source_location`, `source_quote`, `effective_date` — and separate capture of original vs amended values rather than one scalar",
+      "A second extraction pass that only reads amendments"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Temperature affects sampling variability, not conflicting sources or auditability.",
+      "Frequency isn't precedence — an amendment stated once beats an original value stated three times.",
+      "When documents amend and conflict, a single scalar is the wrong shape. Provenance fields make every value traceable and let reviewers audit the model's choice against the exact source text.",
+      "A separate amendments pass still needs provenance to justify which value won, and fragments the extraction."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 4 > Source Grounding and Provenance"
+  },
+  {
+    "id": "q-s04-06",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A team wants API-level citations attached to every field of a strict JSON structured output. What is the architectural reality?",
+    "options": [
+      "Citations and strict JSON structured outputs may be incompatible — citations need interleaved citation blocks while schemas constrain the JSON — so represent source locations explicitly as fields in your schema",
+      "Citations attach automatically to any JSON field when enabled",
+      "Citations work with JSON if you lower the schema's strictness setting",
+      "Citations replace the need for provenance fields in all extraction designs"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The two features have conflicting output requirements. For structured extraction with provenance, the schema itself should carry `source_location`-style fields.",
+      "There is no automatic per-field citation attachment for constrained JSON.",
+      "Strictness settings don't reconcile interleaved citation blocks with constrained JSON output.",
+      "Citations suit narrative answers over documents; structured extraction still needs explicit provenance fields."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Source Grounding (citations vs structured outputs)"
+  },
+  {
+    "id": "q-s04-07",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Invoice extractions keep showing line items that don't sum to the stated total. What schema addition catches this without asking the model to reconcile values it can't verify?",
+    "options": [
+      "A `verified: true` field the model sets after checking its own math",
+      "Explicit reconciliation fields — `calculated_total`, `stated_total`, `totals_match` — so mismatches are flagged mechanically",
+      "A required comment field explaining any discrepancy",
+      "Rejecting any extraction where totals differ"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Self-certification is the thing being doubted; the model asserting \"verified\" adds no evidence.",
+      "Reconciliation fields expose both numbers so application code flags mismatches automatically — catching OCR errors and extraction mistakes alike, with no self-reconciliation demanded of the model.",
+      "Free-text explanations aren't machine-checkable and invite rationalization.",
+      "Sometimes the mismatch is real (the invoice itself is wrong) — that's information to surface, not an extraction failure to reject."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Semantic Validation (reconciliation fields)"
+  },
+  {
+    "id": "q-s04-08",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In which failure case are retries with feedback UNPRODUCTIVE, no matter how good the correction prompt is?",
+    "options": [
+      "A locale-formatted number (\"1,234\") needs to become the integer 1234",
+      "The source provides a nested object but the schema wants a flat array",
+      "An ISO datetime needs truncating to a date",
+      "The required information lives in an external document that was never provided to the model"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Trivially fixed on retry with feedback.",
+      "Restructuring is exactly what feedback-guided retries fix well.",
+      "A formatting fix the model handles immediately once told.",
+      "No retry can extract what isn't in the context — further attempts only produce hallucinated values. Retrieve the missing source or route to human review."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 4 > When Retries Don't Help"
+  },
+  {
+    "id": "q-s04-09",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A meeting transcript fits in context, but decisions and dollar amounts are scattered across hours of unrelated chatter, and extractions keep missing details. What is the highest-leverage change?",
+    "options": [
+      "Add a pre-extraction pass that surfaces relevant sections — decisions, action items, amounts, dates — into a structured intermediate, then extract from that",
+      "Add more few-shot examples of complete extractions",
+      "Chunk the transcript and extract from each chunk independently",
+      "Switch to a model with a larger context window"
+    ],
+    "answer": 0,
+    "rationales": [
+      "For long-but-in-context sources with buried facts, a model-driven pre-extraction pass keeps attention on what matters and substantially cuts missed or conflated details — better than chunking or more examples.",
+      "Few-shot helps unusual extraction patterns; it doesn't help find needles in a haystack.",
+      "Chunking spreads the haystack across requests and loses cross-chunk relationships (a decision revised an hour later).",
+      "The document already fits — capacity isn't the constraint, attention is."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Long and Scattered Documents"
+  },
+  {
+    "id": "q-s04-10",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A pipeline is 97% accurate overall, and leadership wants to auto-approve high-confidence extractions. What must happen first?",
+    "options": [
+      "Lower the threshold gradually while monitoring complaints",
+      "Nothing — 97% exceeds the human baseline",
+      "Break accuracy down by document type, field, and confidence band against a labeled set — aggregates can hide a segment running at 80% — then keep stratified sampling of auto-approved outputs after launch",
+      "A/B test several thresholds and keep the best F1"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Complaints are lagging, incomplete feedback — systematic errors that look plausible never get reported.",
+      "Beating humans on average says nothing about where the pipeline fails.",
+      "Segment-level analysis is the prerequisite; uncalibrated confidence can't define a safe threshold, and post-launch stratified sampling catches hidden error patterns.",
+      "Threshold optimization before segmentation tunes against a misleading aggregate."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 4 > Confidence and Human Review (Validating Automation Plans)"
+  },
+  {
+    "id": "q-s04-11",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Documents arrive with mixed urgency: most tolerate delay, some have tight SLAs. How should batch vs real-time processing be assigned?",
+    "options": [
+      "Batch everything and mark urgent documents as high priority within the batch",
+      "Route per-document: standard documents to the Batch API for cost savings, urgent ones to the real-time Messages API",
+      "Process everything real-time to be safe",
+      "Alternate batches hourly between urgent and standard queues"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Batches can't expedite items inside them — batch latency is precisely why urgent documents don't belong there.",
+      "Routing is per-document, not per-workload: each document goes to the API whose latency profile matches its deadline. Join batch results by `custom_id`, since order isn't guaranteed.",
+      "Paying real-time prices for delay-tolerant volume forfeits the batch discount for nothing.",
+      "Urgent items still wait for a batch window; the SLA problem remains."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Batch Extraction (mixed urgency)"
+  },
+  {
+    "id": "q-s04-12",
+    "section": 4,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Corrections data shows informal measurements (\"a handful,\" \"a splash\") get invented or omitted in 23% of cases. What is the highest-leverage fix?",
+    "options": [
+      "Fine-tune a custom model on the corrections dataset",
+      "Add a regex post-processor that detects informal units",
+      "Create a new schema field for measurement style",
+      "Add a few-shot example demonstrating the correct handling — extracting the informal phrase verbatim"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Fine-tuning is a heavyweight intervention to try only if focused prompt improvements fail to move the metric.",
+      "Regex can find informal units but can't teach the model what to do with them.",
+      "A new field doesn't change the invent-or-omit behavior.",
+      "For a clear recurring failure mode, one demonstrating example is usually the cheapest, most effective fix — examples teach subtle handling better than narrative rules."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 4 > Feedback Loops"
+  }
+]

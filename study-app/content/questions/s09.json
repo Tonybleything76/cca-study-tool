@@ -1,0 +1,244 @@
+[
+  {
+    "id": "q-s09-01",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A team configures their support agent to \"escalate after three failed tool calls.\" What is wrong with this rule?",
+    "options": [
+      "Three is too few — five is the industry standard",
+      "Escalation should never be automatic",
+      "The category and impact of the failure matter more than the count — one uncertain-state write may demand immediate escalation while five transient read timeouts demand none",
+      "Failed tool calls cannot be counted reliably"
+    ],
+    "answer": 2,
+    "rationales": [
+      "No count is the right count — the dimension itself is wrong.",
+      "Escalation should absolutely be systematic; it just needs the right triggers.",
+      "Escalate on the nature of the situation: user asks for a human, authority is lacking, policy exceptions arise, progress stalls, or tool results show unsafe/uncertain state. A counter is blind to all of that.",
+      "Counting is easy; it just measures the wrong thing."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 9 > Escalation"
+  },
+  {
+    "id": "q-s09-02",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "What should an escalation handoff to a human agent contain?",
+    "options": [
+      "Structured context: customer ID, issue type, root cause, relevant record IDs, amounts, actions already taken, and a recommended next action",
+      "The user's first complaint message, verbatim",
+      "The complete conversation transcript",
+      "Just the case number — humans prefer to start fresh"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The human should start where the agent stopped, not where the customer started. Structure makes the context actionable in seconds.",
+      "The first complaint omits everything learned since.",
+      "Transcript dumps work only when the receiving system can actually use them — usually they bury the signal.",
+      "Starting fresh forces the customer to repeat everything — the exact failure users hate most."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Escalation (structured handoff)"
+  },
+  {
+    "id": "q-s09-03",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A frustrated user demands a human, but the agent can resolve the issue immediately. What is the right behavior?",
+    "options": [
+      "Transfer immediately — the user's request overrides everything",
+      "Resolve it silently, then tell them it's fixed",
+      "Ask a series of intake questions to document frustration before transfer",
+      "Acknowledge the frustration and offer both: \"I can resolve this now, and I can also transfer you if you prefer\" — preserving their choice"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Transferring away from an instant fix serves the process, not the person — offer the fix while honoring the preference.",
+      "Silently acting after someone asked for a human overrides their stated choice.",
+      "An intake questionnaire is friction stacked on frustration.",
+      "Acknowledge, then present the immediate resolution alongside the transfer option. The user stays in control either way."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 9 > Frustrated Users"
+  },
+  {
+    "id": "q-s09-04",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which enforcement mechanism is appropriate for \"refunds above $500 require manager approval\"?",
+    "options": [
+      "A prominent system prompt rule with IMPORTANT markers",
+      "Tool-level enforcement, middleware, permissions, or hooks — prompt instructions guide behavior but are not tamper-proof",
+      "Few-shot examples of correctly refusing large refunds",
+      "Post-hoc anomaly detection on refund logs"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Prompt language biases the agent; adversarial users and injected content can push past it.",
+      "Hard rules — regulated workflows, thresholds, destructive operations — are enforced in code. The prompt can explain the policy; the tool must enforce it.",
+      "Examples improve typical behavior, not worst-case behavior — and policy is about the worst case.",
+      "Detection finds violations after the money moved."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Compliance and Authorization"
+  },
+  {
+    "id": "q-s09-05",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In the threshold-enforcement pattern, where does the refund limit VALUE come from, and what happens when a call exceeds it?",
+    "options": [
+      "From the system prompt; excess calls fail silently",
+      "From a model-passed parameter; excess calls are logged",
+      "From a server-controlled source — feature flag, policy service, account record — and excess calls return a structured `requires_approval` result that routes to a manager",
+      "From the tool description; excess calls throw exceptions"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Prompts state policy; they can't be the source of truth for enforcement values.",
+      "Anything the model passes, the model controls — the threshold must live where the model can't touch it.",
+      "No override parameter exists on the public interface, the limit lives server-side, and over-limit requests become pending approvals rather than silent failures. Every property is load-bearing.",
+      "Descriptions inform selection; they're not configuration. And silent exceptions strand the workflow."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Compliance (threshold enforcement inside the tool)"
+  },
+  {
+    "id": "q-s09-06",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In preview-then-execute for high-impact actions, what makes the one-time token actually safe?",
+    "options": [
+      "It is encrypted with the server's private key",
+      "It is short-lived and bound to the previewed payload — the model cannot construct one from scratch or reuse one with different parameters, so execution can only follow a real preview the user confirmed",
+      "It is logged for audit purposes",
+      "It is generated by the model so the model stays accountable"
+    ],
+    "answer": 1,
+    "rationales": [
+      "The cryptography matters less than the binding: token ↔ exact previewed action.",
+      "The token's constraints ARE the mechanism: no token without a preview, no reuse, no parameter swapping. Execution is structurally downstream of user confirmation.",
+      "Logging observes; it doesn't prevent.",
+      "A model-generated token defeats the entire point — the model could then skip the preview."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 9 > Compliance (preview-then-execute tokens)"
+  },
+  {
+    "id": "q-s09-07",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "\"The model already checked the policy before calling the tool, so the tool skips authorization.\" What is the correct assessment?",
+    "options": [
+      "Acceptable if the policy check is in the system prompt",
+      "Acceptable for read-only tools",
+      "Efficient — double-checking wastes latency",
+      "Wrong — tools live inside the trust boundary and must re-verify the caller's authority on every invocation; \"the model already checked\" is not a defense"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Prompt-level checks are advisory; they can't stand in for server-side authorization.",
+      "Even reads can leak data the caller isn't authorized to see.",
+      "An authorization check is microseconds; an unauthorized state change is an incident.",
+      "The model is outside the trust boundary — well-behaved or not. Server-side validation on every state change is non-negotiable."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Compliance (server-side authorization)"
+  },
+  {
+    "id": "q-s09-08",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "What does defense-in-depth look like for a customer service agent's policy rules?",
+    "options": [
+      "Prompt rules to bias the agent toward policy, tool implementations to enforce it, and audit logs to detect what slipped through — each layer doing the job the others can't",
+      "Three increasingly strict system prompts checked in sequence",
+      "One perfectly written enforcement layer, tested exhaustively",
+      "Human review of every agent action"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Bias, enforce, detect. Prompts make compliance the agent's default; tools make violations impossible; audits catch the unforeseen. Removing any layer leaves a specific gap.",
+      "Three prompts are one layer repeated — injection that beats one beats all three.",
+      "Perfection isn't available; detection exists because enforcement has bugs.",
+      "Reviewing everything doesn't scale and still doesn't prevent — it detects with maximal cost."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Compliance (defense-in-depth)"
+  },
+  {
+    "id": "q-s09-09",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Midway through resolving a shipping claim, the refund tool goes down, though the agent has verified eligibility. What should the agent tell the user?",
+    "options": [
+      "\"We hit an error. Please try again later.\"",
+      "Nothing yet — wait for the tool to recover",
+      "\"Your refund is being processed\" — it will likely succeed on retry",
+      "What's done, what's pending, and how to finish: eligibility is verified, the refund submission is temporarily unavailable, and here are the options — retry shortly, escalate, or get notified"
+    ],
+    "answer": 3,
+    "rationales": [
+      "A generic error discards the real progress made and tells the user nothing actionable.",
+      "Silence reads as abandonment mid-issue.",
+      "Claiming a side effect that hasn't happened is the cardinal sin — users tolerate visible incompleteness, not discovering a \"completed\" action silently never ran.",
+      "Partial completion done right: verified facts stated, the gap named honestly, concrete next steps offered."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 9 > Graceful Degradation"
+  },
+  {
+    "id": "q-s09-10",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "The same tool keeps failing on the same input, attempt after attempt. What should the agent do?",
+    "options": [
+      "Keep retrying — persistence eventually wins",
+      "Treat repeated same-input failure as a signal to switch strategies: try a different tool, ask a clarifying question, or escalate",
+      "Report the tool as permanently broken",
+      "Silently skip that part of the task"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Identical input, identical failure — more attempts buy nothing.",
+      "Repetition is information: this path doesn't work. Strategy changes — different tool, more information from the user, or a human — are what progress looks like now.",
+      "One input failing doesn't condemn the tool for other inputs.",
+      "Silent gaps surface later as broken promises."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Graceful Degradation (repeated failure)"
+  },
+  {
+    "id": "q-s09-11",
+    "section": 9,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "The notification service hasn't confirmed sending the customer's confirmation email. What may the agent say?",
+    "options": [
+      "Only what is true: the request was submitted but delivery isn't confirmed — never claim a side effect happened when the system hasn't completed it",
+      "\"Your confirmation email has been sent\" — it almost certainly will be",
+      "\"Check your inbox in a few minutes\"",
+      "Nothing about the email at all"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Honest uncertainty preserves trust and prevents the user from acting on a false premise.",
+      "\"Almost certainly\" is exactly the gap where trust dies.",
+      "Implies the send is a done deal — same claim, softer wording.",
+      "Omission leaves the user wondering whether to expect anything; the honest partial answer is better."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 9 > Graceful Degradation (don't claim uncompleted side effects)"
+  }
+]

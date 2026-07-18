@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s06-01",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An application sends the system prompt only on the first turn, assuming Claude remembers it. What actually happens?",
+    "options": [
+      "Behavior diverges from the configured persona immediately on the first request that omits it",
+      "Behavior degrades gradually as the conversation grows",
+      "Nothing — the API caches the system prompt per conversation",
+      "The model asks the user what its instructions were"
+    ],
+    "answer": 0,
+    "rationales": [
+      "No memory between calls means an omitted system prompt simply doesn't exist for that request — the divergence is immediate, not gradual. (Gradual drift with the prompt present is a different phenomenon: attention competition.)",
+      "Gradual degradation is the signature of dilution WITH the prompt present; omission fails instantly.",
+      "There is no per-conversation caching of instructions — every request stands alone.",
+      "The model doesn't know instructions are missing; it just behaves without them."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 6 > What to Know (system prompt every request)"
+  },
+  {
+    "id": "q-s06-02",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A system prompt is verifiably sent on every request, yet persona adherence weakens after many turns. Why?",
+    "options": [
+      "The API truncates system prompts in long conversations",
+      "The model's context window is full",
+      "Attention competition — the model's own recent outputs and the latest user turns increasingly compete with the system prompt, so behavior drifts even though the prompt is unchanged",
+      "System prompts expire after a fixed number of turns"
+    ],
+    "answer": 2,
+    "rationales": [
+      "The API doesn't truncate your system prompt.",
+      "Drift happens well before the window fills; capacity isn't the mechanism.",
+      "Dilution is structural: accumulated conversation becomes a behavioral pattern that competes with instructions. Fixes are structural too — reinforce at breakpoints, use examples, move hard rules into code.",
+      "No such expiry exists."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 6 > What to Know / Prompt Dilution"
+  },
+  {
+    "id": "q-s06-03",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "What do XML-style tags (`<role>`, `<safety>`) actually contribute to a system prompt?",
+    "options": [
+      "The API parses them and enforces each section's rules",
+      "Salience and organization — sections separate concerns, and constraints become referenceable later (\"apply the rule from <safety>\")",
+      "They compress the prompt to fewer tokens",
+      "Nothing — they are purely cosmetic"
+    ],
+    "answer": 1,
+    "rationales": [
+      "No API-level enforcement is attached to tags — they're not magic.",
+      "Structure helps the model keep concerns distinct (persona vs style vs safety) and lets later turns reference specific sections by name.",
+      "Tags add tokens, slightly.",
+      "Not magic, but not cosmetic either — organization measurably improves salience."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > What to Know (XML tags)"
+  },
+  {
+    "id": "q-s06-04",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A high-traffic agent uses prompt caching. External webhooks frequently update user state (order shipped, plan changed). Where should that fast-changing state go?",
+    "options": [
+      "Rewrite the system prompt on every state change — it's the natural home for current truth",
+      "Bury it in a synthetic tool result",
+      "Skip injection and let the agent look state up when asked",
+      "Keep the system prompt stable and inject the state as a clearly labeled block later in the context, near the latest user turn — preserving the cached prefix"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Normally correct for state updates — but caching matches an exact prefix, and the system prompt heads that prefix. Rewriting it per change invalidates the cache for the whole conversation.",
+      "Tool results imply the agent asked; synthetic ones muddy that contract.",
+      "The agent will confidently assert stale status the moment the user asks indirectly.",
+      "The caching trade-off inverts the default placement: stable prefix up front, volatile state after the last breakpoint. This keeps cache reads high while state stays current."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > What to Know (state updates vs caching)"
+  },
+  {
+    "id": "q-s06-05",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An assistant should adapt explanation depth to each user's demonstrated expertise. Which instruction style works better, and why?",
+    "options": [
+      "Conditionals — \"if the user mentions X, assume novice; if they use term Y, assume intermediate\" — because explicit triggers are testable",
+      "A general principle — \"adapt depth to the user's demonstrated proficiency\" — because it lets the model integrate many implicit signals instead of shallow keyword matching",
+      "Both equally, if written clearly",
+      "Neither — expertise adaptation requires fine-tuning"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Keyword conditionals misclassify anyone who phrases things atypically — they force judgment into string matching.",
+      "Judgment-heavy behavior needs principles: vocabulary, framing, follow-up specificity, and error patterns all inform the read, and no conditional list captures them.",
+      "The failure mode of conditionals here is structural, not a writing-quality issue.",
+      "Models do this well from a principle; no tuning needed."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > Principles vs Conditionals"
+  },
+  {
+    "id": "q-s06-06",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which behavior belongs in an explicit conditional rather than a general principle — and what belongs in neither?",
+    "options": [
+      "Conditionals for tone adaptation; code for greetings",
+      "Conditionals for all behaviors; code only for calculations",
+      "Principles for everything; conditionals are always harmful",
+      "Conditionals for safety triggers and policy bright lines (\"if immediate medical emergency, direct to emergency services\"); rules that must hold 100% of the time go into code, not the prompt at all"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Tone is judgment (principle territory); greetings hardly need code.",
+      "Blanket conditionals cause the conditional-explosion failure — shallow triggers replacing judgment.",
+      "Conditionals have a real role: crisp, high-stakes triggers where you want zero interpretation.",
+      "The three-tier rule: principles for judgment, conditionals for bright lines, code for guarantees. Prompts are probabilistic; 100% rules need enforcement."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 6 > Principles vs Conditionals"
+  },
+  {
+    "id": "q-s06-07",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A system prompt spends seven sentences describing how to summarize a beginner's question vs an expert's. Compliance is inconsistent. What is the denser alternative?",
+    "options": [
+      "Two or three contrasting few-shot examples showing the exact behavior for each case",
+      "Reordering the seven sentences by importance",
+      "Adding \"IMPORTANT\" before the seven sentences",
+      "Splitting the prompt into two prompts selected by a classifier"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Examples are denser than prose for behavior the model must learn rather than recite — show both cases and adherence typically recovers.",
+      "Reordering prose doesn't fix prose being the wrong medium for subtle distinctions.",
+      "Salience markers help attention, not comprehension of a nuanced distinction.",
+      "Router complexity for a problem two examples solve."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > Few-Shot Examples"
+  },
+  {
+    "id": "q-s06-08",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "For a long-running workflow session, which reinforcement pattern fights prompt dilution WITHOUT cluttering every turn?",
+    "options": [
+      "Re-send the entire system prompt as a user message every five turns",
+      "Append \"remember your instructions\" to each user message",
+      "Brief user-role reminders of current operating constraints at natural breakpoints (task transitions, returns from idle, topic switches), plus treating the system prompt as living configuration updated between sessions",
+      "Raise the temperature so the model re-reads instructions"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Wholesale re-sending bloats context and reads as noise rather than integrating with the conversation.",
+      "A per-turn nag becomes wallpaper — and clutters every exchange.",
+      "Breakpoint reminders integrate with what the model is already attending to; prompt versioning keeps the system prompt stating \"what currently holds\" for multi-session work.",
+      "Temperature has nothing to do with instruction attention."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > Prompt Dilution (reinforcement patterns)"
+  },
+  {
+    "id": "q-s06-09",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When should an assistant ask a clarifying question instead of proceeding with a stated assumption?",
+    "options": [
+      "Whenever any detail is unspecified",
+      "When interpretations lead to substantially different actions, the action is irreversible or costly, or the user has stated conflicting goals — and then ONE focused question, not a list",
+      "Never — always proceed and let the user correct",
+      "Only when the user explicitly invites questions"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Interrogating every ambiguity is friction; low-risk gaps deserve a stated assumption the user can redirect.",
+      "Risk decides. And when you do ask, one focused question beats a list of four — users typically answer only the first anyway. Pick the disambiguation that most changes your next action.",
+      "For irreversible, costly, or regulated actions, proceeding on a guess is the expensive path.",
+      "The trigger is risk and ambiguity, not invitation."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 6 > Clarifying Questions and Assumptions"
+  },
+  {
+    "id": "q-s06-10",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A user wants \"the cheapest possible flight\" and \"arriving by 9 AM Friday, nonstop.\" No flight satisfies all three. What should the assistant do?",
+    "options": [
+      "Pick the cheapest flight and note the compromise in passing",
+      "Present a middle option balancing price and schedule",
+      "Ask a series of questions about all travel preferences",
+      "Name the contradiction explicitly and ask which constraint should bend"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Silently sacrificing the schedule optimizes a constraint the user may care about most.",
+      "Hidden compromises satisfy neither stated goal and usually cause rework.",
+      "A preference interrogation buries the one question that matters.",
+      "Conflicting constraints are the user's call: surface the tension, ask the single governing-priority question, then act."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > Clarifying Questions (conflicting preferences)"
+  },
+  {
+    "id": "q-s06-11",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "Responses keep opening with \"Great question! I'd be happy to help.\" What is the durable fix on current models?",
+    "options": [
+      "An explicit style instruction to respond directly with substance, paired with one or two examples of the desired opening",
+      "A partial assistant prefill starting the reply mid-sentence",
+      "A longer list of banned phrases",
+      "Lowering max_tokens so there's no room for preamble"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Instruction plus example is the pattern that survives — show the opening you want.",
+      "Trailing assistant prefills are rejected on current models; this was the old trick.",
+      "\"Never say X\" lists play whack-a-mole with infinite phrasings.",
+      "Token limits truncate substance, not preamble specifically."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 6 > Response Format Control"
+  },
+  {
+    "id": "q-s06-12",
+    "section": 6,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A team relies on \"IMPORTANT:\" and \"NEVER\" prefixes as their compliance mechanism for a billing policy rule. What is the correct assessment?",
+    "options": [
+      "Effective — capitalized markers guarantee attention and compliance",
+      "Effective for short prompts, unreliable for long ones",
+      "These markers improve salience but cannot guarantee behavior — a rule that must hold 100% of the time belongs in code, hooks, or tool logic, not prose",
+      "Ineffective — salience markers do nothing at all"
+    ],
+    "answer": 2,
+    "rationales": [
+      "No prompt text guarantees behavior; emphasis shifts probabilities.",
+      "Length isn't the boundary — probabilistic vs deterministic is.",
+      "The reliability ceiling of prompt language is structural. Salience markers are legitimate tools for emphasis, and the wrong tool for policy enforcement.",
+      "They do help salience — the error is treating help as guarantee."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 6 > Common Pitfalls"
+  }
+]

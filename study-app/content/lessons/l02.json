@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-02",
+    "section": 2,
+    "title": "Designing Tool Interfaces for LLM Agents",
+    "minutes": 9,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>A \"tool\" is a function you let Claude call — search the catalog, send an email, issue a refund. Claude chooses tools by reading their names, descriptions, and parameter definitions, the way you'd choose an appliance by reading its label and manual. So tool design is really <strong>communication design</strong>: a good interface makes the right action easy and the wrong action hard or impossible.</p><p>The core instinct to build: <em>don't tell the model rules the schema could enforce.</em> If a cardio workout needs duration and a strength workout needs sets and reps, one do-everything tool with optional fields invites nonsense combinations. Two separate tools make the invalid combinations literally unexpressible.</p><p>Where a tool <em>runs</em> matters too. Client-side tools run in your app (full control, full responsibility). Server-side tools run on Anthropic's infrastructure (no ops burden, but you can't intercept calls). MCP tools run wherever that server lives. Promote an action to a dedicated client-side tool when you need to gate, audit, or confirm it — a <code>send_email</code> call can be intercepted; a shell command doing the same thing is an opaque string.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>A user says \"delete the Henderson project.\" There are two projects with Henderson in the name. If your delete tool accepts a name string, the model guesses — and one day guesses wrong. The safe pattern is <strong>lookup-then-act</strong>: a search tool returns candidate IDs with distinguishing details (owner, last activity), the user picks the right one with a click, and the delete tool only accepts IDs. For truly destructive actions, add <strong>preview-then-execute</strong>: a preview tool returns the impact plus a one-time confirmation token, and the execute tool requires that token. Note what this replaces: a <code>dry_run: true</code> flag is worthless because the model itself sets it.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Output design gets tested as much as input design:</p><ul><li>Return structured results with IDs downstream tools can use — never just prose.</li><li>\"No matches\" is a <em>successful</em> empty result, not an error; conflating them makes agents retry valid queries.</li><li>Paginate: first page + <code>total_count</code> + cursor. Don't auto-fetch hundreds of items.</li><li>Normalize heterogeneous backend data into one consistent schema before the model sees it.</li><li>For ML outputs with confidence scores, return a calibrated <code>requires_review</code> boolean with reasons — raw scores invite over-trust and over-escalation.</li></ul><p>For big tool catalogs, use <strong>progressive availability</strong>: discovery tools return a shortlist, then the chosen tools are dynamically added — never a single <code>find_and_execute</code> that hides the final decision. And compose tools only when no judgment lives between the steps; \"check availability + book\" should be atomic (race condition), but \"retrieve sources + write conclusions\" must stay separate.</p>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Schemas enforce; descriptions advise. Make invalid calls unrepresentable.",
+          "Lookup-then-act: search returns IDs, mutations accept only IDs, users disambiguate.",
+          "dry_run flags are model-controlled and useless; preview + one-time token is structural.",
+          "Empty result ≠ error. Success-with-nothing and failure must be distinguishable.",
+          "Compose tools for mechanical/atomic sequences; never to hide decisions."
+        ]
+      }
+    ],
+    "resources": ["r-03", "r-02", "r-37"]
+  }
+]

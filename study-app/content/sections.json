@@ -1,0 +1,17 @@
+[
+  { "num": 1,  "title": "API Fundamentals and Output Control",              "short": "API Output Control" },
+  { "num": 2,  "title": "Designing Tool Interfaces for LLM Agents",         "short": "Tool Design" },
+  { "num": 3,  "title": "Error Handling in Agent Tools",                    "short": "Error Handling" },
+  { "num": 4,  "title": "Structured Data Extraction and Validation",        "short": "Structured Extraction" },
+  { "num": 5,  "title": "Conversation Context Management",                  "short": "Context Management" },
+  { "num": 6,  "title": "System Prompt Engineering and Conversational Behavior", "short": "System Prompts" },
+  { "num": 7,  "title": "Model Context Protocol (MCP)",                     "short": "MCP" },
+  { "num": 8,  "title": "Agentic Patterns and Task Decomposition",          "short": "Agentic Patterns" },
+  { "num": 9,  "title": "Customer Service and Production Workflow Design",  "short": "Service Workflows" },
+  { "num": 10, "title": "Claude Code and Claude Agent SDK Workflows",       "short": "Claude Code & SDK" },
+  { "num": 11, "title": "Iterative Refinement, Testing, and Evaluation",    "short": "Testing & Evals" },
+  { "num": 12, "title": "Model Selection and Inference Controls",           "short": "Model Selection" },
+  { "num": 13, "title": "Prompt Caching",                                   "short": "Prompt Caching" },
+  { "num": 14, "title": "Batch Processing, Cost, and Latency",              "short": "Batch & Cost" },
+  { "num": 15, "title": "Security and Trust Boundaries",                    "short": "Security" }
+]

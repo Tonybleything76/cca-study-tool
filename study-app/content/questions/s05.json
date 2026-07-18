@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s05-01",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "When is a plain sliding window the RIGHT context strategy?",
+    "options": [
+      "When conversations regularly reference decisions made much earlier",
+      "When production logs show older messages are rarely referenced and users can easily re-state what's needed",
+      "When exact numbers must survive the whole session",
+      "When safety-critical facts like allergies are involved"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Referring back to earlier decisions is exactly where sliding windows fail.",
+      "Simple and cheap wins when the traffic profile supports it — e.g., 94% of messages referencing only the last 3–5 exchanges. The rare reach-back can be handled by asking the user to re-state.",
+      "Exact facts need structured state or retrieval, not truncation.",
+      "Safety-critical facts must survive verbatim in a retained reference section."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > Sliding Window"
+  },
+  {
+    "id": "q-s05-02",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A RAG-backed assistant accumulates retrieval results from many earlier queries, crowding out conversational coherence. What is the recommended fix?",
+    "options": [
+      "Summarize all retrievals into one running digest",
+      "Aggressively deduplicate retrieved passages before injection",
+      "Move all retrievals to a vector store and re-retrieve per turn",
+      "Apply a sliding window specifically to RAG results (keep the last 2–3 retrievals) while conversation history keeps its own policy"
+    ],
+    "answer": 3,
+    "rationales": [
+      "A mega-digest is more complicated and rarely better — and it blurs the specific passages the current question needs.",
+      "Deduplication helps at the margin but doesn't stop unbounded accumulation.",
+      "Re-retrieving everything each turn adds infrastructure to solve what a simple windowing policy solves directly.",
+      "Different content types deserve different retention policies. Old retrievals are usually stale; recent ones matter. Windowing RAG separately preserves conversation flow."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 5 > Sliding Window (accumulated RAG results)"
+  },
+  {
+    "id": "q-s05-03",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "What distinguishes a USEFUL progressive summary from a bad one?",
+    "options": [
+      "Useful summaries are shorter",
+      "Useful summaries are written by a separate summarization model",
+      "Useful summaries are structured — decisions, current preferences, open questions, important facts — while bad ones are vague narrative prose that loses the exact details users later ask about",
+      "Useful summaries include every message verbatim"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Brevity without structure just loses information faster.",
+      "Who writes it matters less than what it captures.",
+      "The failure mode of summarization is blurring specifics. Explicitly extracting decisions, preferences, open questions, and facts preserves what \"describe the conversation\" prose loses.",
+      "That's not a summary — it defeats the purpose."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 5 > Progressive Summarization"
+  },
+  {
+    "id": "q-s05-04",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A cooking assistant must remember \"room temperature butter means 68°F in this kitchen\" and a shellfish allergy for the entire session, while ordinary chat is summarized freely. Where do those exact facts belong?",
+    "options": [
+      "In the most recent turns, repeated periodically by the assistant",
+      "In a retained reference section at the start of context, exempt from trimming and summarization",
+      "In the progressive summary, marked as important",
+      "In an external database queried when the topic comes up"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Recent turns roll off; repetition depends on the model remembering to repeat.",
+      "Content that must stay exact and stable gets its own protected section — trimming applies only to the surrounding discussion. Mixing them into one summarization pass is how allergies get blurred.",
+      "Summaries are exactly where exact details go to die, \"important\" label or not.",
+      "Retrieval can miss; safety-critical session facts are small enough to keep permanently in context."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > Persistent Reference Sections"
+  },
+  {
+    "id": "q-s05-05",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Users revise preferences mid-session (\"actually, make the budget $4,200\"), and the assistant sometimes applies outdated ones. What is the most reliable fix?",
+    "options": [
+      "A system prompt instruction: \"always prioritize the most recently stated preferences\"",
+      "Few-shot examples of correctly applying preference changes",
+      "Pruning turns that contain superseded preferences",
+      "A canonical structured state object updated on every revision and included in each request — a single source of current truth"
+    ],
+    "answer": 3,
+    "rationales": [
+      "The model usually follows it — but not reliably enough, since old and new values still compete in context.",
+      "Examples improve framing but don't give the model one authoritative place to look.",
+      "Pruning can delete context needed for other reasons, and revision turns are easy to miss.",
+      "Don't make the model infer current truth from a history containing both old and new values. Maintain the truth explicitly; send it every turn."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 5 > Structured State"
+  },
+  {
+    "id": "q-s05-06",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A user says \"I have very low risk tolerance\" and later \"I want to maximize returns like my friends did with crypto.\" What should the assistant do?",
+    "options": [
+      "Follow the more recent statement — recency wins",
+      "Recommend a balanced middle-ground portfolio",
+      "Surface the contradiction and ask which priority should govern",
+      "Follow the first statement — safety-related preferences take precedence"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Recency resolves revisions, not contradictions the user hasn't noticed making.",
+      "A balanced compromise risks fitting neither stated preference — the classic hidden-compromise failure.",
+      "Incompatible goals are the user's decision to resolve. Name the tension explicitly; proceed once one priority governs.",
+      "Assuming precedence silently still guesses — and this decision matters."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > Structured State (conflicting preferences)"
+  },
+  {
+    "id": "q-s05-07",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A research assistant summarizes paper discussions after 8 turns, but users then ask for precise p-values and sample sizes the summaries blurred. What is the most direct fix?",
+    "options": [
+      "Re-inject the relevant source sections on demand when a question signals the need for precision",
+      "Build a structured fact store of every numerical detail in every paper",
+      "Make the summaries higher-fidelity so they preserve all numbers",
+      "Stop summarizing and keep full transcripts"
+    ],
+    "answer": 0,
+    "rationales": [
+      "On-demand retrieval restores exactness only when needed and scales across unpredictable follow-ups.",
+      "Heavier to build and may not match the variety of questions users actually ask.",
+      "Summaries that preserve every number balloon back toward the original document.",
+      "That reintroduces the context growth the summarization existed to control."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 5 > Retrieval and Fact Stores"
+  },
+  {
+    "id": "q-s05-08",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An agent investigating return requests has called `lookup_order` many times; each response has 40+ fields and the raw outputs now dominate context. What is the most reliable approach?",
+    "options": [
+      "Summarize all the order responses into one prose paragraph",
+      "Move the responses to a vector database and retrieve as needed",
+      "Compress each prior response to its return-relevant fields (order_id, dates, items, return_window, status) and continue",
+      "Stop making lookups and work from what's already in context"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Prose summarization blurs the IDs and dates the investigation turns on.",
+      "Retrieval infrastructure to re-find data the agent already has is complexity without benefit.",
+      "Tool result compression: after processing, keep the fields that matter for the task and drop backend noise. Context stays lean without losing decision-relevant facts.",
+      "The investigation may genuinely need more lookups; the fix is compressing results, not starving the task."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > Tool Result Compression"
+  },
+  {
+    "id": "q-s05-09",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "How do API-native compaction and context editing differ, and when is application-level management still required?",
+    "options": [
+      "Compaction deletes old turns; context editing rewrites them — use either when facts must survive verbatim",
+      "Compaction summarizes earlier history into a compact block; context editing prunes stale content like old tool results — but when specific facts must survive verbatim, application-level structures (state objects, reference sections) are still the right tool",
+      "They are the same mechanism with different names",
+      "Both require you to build and tune your own summarization pipeline"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Backwards: compaction summarizes rather than deletes, and neither guarantees verbatim survival of specific facts.",
+      "Summarize vs prune is the distinction. API-native mechanisms excel at \"keep a long session alive\" with no plumbing; application-level control is for content you must guarantee survives. They compose well.",
+      "They do different work — one condenses, one clears.",
+      "Avoiding that pipeline is precisely their value."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > API-Native Context Management"
+  },
+  {
+    "id": "q-s05-10",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A customer returns 6 hours after a support session about a pending billing case. How should the new session begin?",
+    "options": [
+      "Resume the full prior transcript with an instruction to prefer recent tool results",
+      "Resume the transcript but filter out old tool_result messages",
+      "Configure the agent to re-call all previously used tools at session start",
+      "Start with a structured summary of prior interaction (issue, actions taken, known IDs, last known status) and fetch fresh state before making claims about current status"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Agents reference old tool results regardless of instructions — especially when the stale results are more detailed than fresh ones.",
+      "Filtering results while keeping turns that reference them confuses the model about missing data.",
+      "Re-calling everything wastes calls on tools irrelevant to the new question.",
+      "Tool results age. A compact structured summary carries continuity; targeted fresh lookups carry truth. `fresh_lookup_required: true` makes staleness explicit."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 5 > Returning Users and Stale Data"
+  },
+  {
+    "id": "q-s05-11",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "Mid-conversation, an external system learns the user's order has shipped. The user hasn't asked about it. How does this information reach the model?",
+    "options": [
+      "Your application includes the fresh state in the next request — a state block or context section — made clearly more authoritative than any stale tool results",
+      "Claude notices the change through its connection to your order system",
+      "Generate an unsolicited assistant message announcing the shipment",
+      "Wait until the user asks, then have a tool look it up"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The model knows nothing outside the request. External updates enter as application-injected state — and must outrank older tool results that say otherwise.",
+      "No such connection exists; the API is stateless.",
+      "Unsolicited assistant turns are a product decision, not a context mechanism — don't fabricate them unless proactive notification is intentional.",
+      "Viable, but it leaves the model asserting stale status if the user asks indirectly; injecting current state is the principled fix."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > External Updates During a Conversation"
+  },
+  {
+    "id": "q-s05-12",
+    "section": 5,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "A model has a very large context window, so the team stops worrying about what goes into context. What are they confusing?",
+    "options": [
+      "Input pricing with output pricing",
+      "Latency with throughput",
+      "Capacity with attention — fitting in the window doesn't make every detail equally salient",
+      "Context windows with training data size"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Pricing isn't the conceptual error here.",
+      "Neither is the latency/throughput distinction.",
+      "A huge window means content *can* be included, not that it will be *attended to* equally. Curation still matters — competing, stale, and verbose content dilutes what's important.",
+      "Training data is unrelated to per-request context."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 5 > Common Pitfalls (capacity vs attention)"
+  }
+]

@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-12",
+    "section": 12,
+    "title": "Model Selection and Inference Controls",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>Claude is a family of models on a capability/cost/latency spectrum: <strong>Haiku</strong> (fastest, cheapest — classification, routing, simple high-volume steps), <strong>Sonnet</strong> (the balanced production workhorse), and <strong>Opus</strong> (most capable — complex agentic work and hard analysis). Versions and prices change; the patterns don't.</p><p>Every question in this section is an <strong>allocation question</strong>: match the tier to the <em>step</em>, not the product. A support pipeline might classify with a small model, converse with a mid-tier one, and reserve the top tier for escalations triggered by measurable signals — low calibrated confidence, failed validation, an explicit \"needs deeper analysis\" flag. Defaulting everything to the biggest model \"to be safe\" is a budget decision dressed up as a safety decision. And a capable coordinator can delegate <em>focused</em> subtasks to cheaper models — narrow scope shrinks the capability gap. Validate any tier change with a segmented eval set, not vibes.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Thinking is <strong>adaptive</strong> on current models: the model decides when and how deeply to reason, scaled by a per-request <em>effort</em> setting (fixed thinking-token budgets are legacy). Spend effort where the task is reasoning-shaped — planning a migration, reconciling ambiguous requirements, debugging from indirect evidence. Mechanical extraction doesn't benefit; buy accuracy there with schemas and few-shot examples. Streaming is a delivery choice, not a quality one: stream when a human is watching (time-to-first-token = perceived speed) or outputs are long (timeout risk); skip it for machine-to-machine calls.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Production code must branch on <code>stop_reason</code>:</p><ul><li><code>end_turn</code> — done. <code>tool_use</code> — run the tools and continue. <code>stop_sequence</code> — expected if configured.</li><li><code>max_tokens</code> — the OUTPUT hit your cap: raise it, stream, or split. <code>model_context_window_exceeded</code> — the INPUT doesn't fit: compact/trim/summarize. Different limits, different fixes; log which occurred.</li><li><code>pause_turn</code> — re-send the conversation as-is; a server-side operation resumes.</li><li><code>refusal</code> — surface or route to review; never blind-retry.</li></ul><p>API-level errors: 429 → honor <code>retry-after</code>, exponential backoff + jitter (the SDKs already do this — don't hand-roll); 500/529 → transient, retry; 400 → malformed, fix the request. Sustained 429s are a <em>capacity-planning</em> signal: spread load, move deferrable volume to batch, request higher limits, split across models — remembering limits are per model and counted in tokens as well as requests. For budgeting, use the free token-counting endpoint; third-party tokenizers miscount Claude tokens.</p>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Allocate tiers per step; escalate on measurable signal, not anxiety.",
+          "Effort is a per-request dial — spend it on reasoning-shaped work only.",
+          "Stream for watching humans and long outputs; it changes delivery, not quality.",
+          "max_tokens = your output cap; context_window_exceeded = input overflow. Branch on stop_reason.",
+          "Sustained 429s mean capacity planning, not better retry loops."
+        ]
+      }
+    ],
+    "resources": ["r-06", "r-08", "r-09", "r-10", "r-11", "r-12", "r-15"]
+  }
+]

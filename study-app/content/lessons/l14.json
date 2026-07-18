@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-14",
+    "section": 14,
+    "title": "Batch Processing, Cost, and Latency",
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>The Message Batches API takes a pile of independent requests, processes them in the background, and returns results when done. Two numbers define it: <strong>roughly 50% off</strong> on-demand pricing, and <strong>up to 24 hours</strong> to complete. Many batches finish sooner — but you design against the ceiling, never the average.</p><p>The fit test is about time, not money: batch works for high-volume, delay-tolerant, independent requests. It fails for interactive users, short-deadline alerts, and chains where each step needs the previous result. Choosing batch \"because it's half price\" without the latency analysis is the named pitfall — a discount on results that arrive too late is a 100% loss.</p><p>One mechanical habit: results come back in arbitrary order, so every request carries a <code>custom_id</code> and your application joins results by it — never by position. Use stable unique IDs (the source record's primary key) so re-running failures stays unambiguous.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Documents arrive all day; results must be usable within 30 hours; batches take up to 24; post-processing takes 4. The worst-case document arrives one second after a submission and waits the whole interval for the next one. So: max cadence = 30 − 24 − 4 = <strong>2 hours</strong>. The arithmetic is always deadline minus batch ceiling minus processing buffer — and the slowest record sets the constraint. Corollary: a once-a-day submission is only safe when the SLA is at least 48 hours (24h wait + 24h window).</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Failure handling is surgical, never wholesale. When 3% of a batch fails: chunk the <code>context_length_exceeded</code> inputs and merge partials; resubmit validation failures with error feedback; refine prompts for schema issues; resubmit expired/canceled <code>custom_id</code>s — and never rerun the successful 97%. Operationally: results are JSONL (stream them incrementally), validate your request shape on the standard API first (one malformed request won't fail the batch — it becomes a per-request error you must reconcile), and expect platform size limits to force multiple batches. The batch discount and prompt caching <em>stack</em> — batched requests support caching — though cache hits inside an async batch are best-effort since requests may process far apart. Neither lever fixes the other's limits.</p>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "~50% off, up to 24 hours — design SLAs on the worst case.",
+          "Fit is decided by latency tolerance, not by the discount.",
+          "Join results by custom_id, never position; keep IDs stable and unique.",
+          "Cadence formula: deadline − 24h batch ceiling − processing buffer.",
+          "Resubmit only failures, handled by failure type."
+        ]
+      }
+    ],
+    "resources": ["r-05", "r-12", "r-15"]
+  }
+]

@@ -1,0 +1,222 @@
+[
+  {
+    "id": "q-s14-01",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "What are the two most important properties of the Message Batches API to remember?",
+    "options": [
+      "No discount, but guaranteed 1-hour completion",
+      "90% discount; 72-hour window",
+      "Roughly 50% off equivalent on-demand pricing, and up to 24 hours to complete — design SLAs around the worst case, not the typical case",
+      "Same price as real-time, but higher rate limits"
+    ],
+    "answer": 2,
+    "rationales": [
+      "There is a substantial discount, and completion can take a full day.",
+      "Both numbers are wrong — half off, one day.",
+      "Many batches finish sooner, but you cannot rely on it. The 24-hour ceiling is what SLA math must use.",
+      "The discount is the point; rate limits aren't the batch API's pitch."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > What to Know"
+  },
+  {
+    "id": "q-s14-02",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which workload is a POOR fit for batch processing?",
+    "options": [
+      "A user waiting interactively for each result",
+      "Nightly re-classification of the document archive",
+      "High-volume independent extractions with a 3-day deadline",
+      "Weekly summary generation for internal reports"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Batch latency and interactive humans are incompatible — a person cannot wait up to 24 hours. Same for short-deadline alerts and steps that feed each other's inputs.",
+      "Delay-tolerant, independent, high-volume: the batch profile exactly.",
+      "Independent requests with generous deadlines are what the discount is for.",
+      "Nothing about a weekly report needs real-time pricing."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 14 > What to Know (fit)"
+  },
+  {
+    "id": "q-s14-03",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "How does an application reliably match batch results to their source records?",
+    "options": [
+      "By result order — batches preserve input order",
+      "By timestamp of completion",
+      "By re-parsing each output to identify its document",
+      "By `custom_id`, never by position — use stable, unique identifiers (often the source record's primary key) so partial re-runs stay unambiguous"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Results may arrive in any order — position-based matching corrupts data silently.",
+      "Completion times say nothing about which request a result answers.",
+      "Content-sniffing is fragile and fails exactly on the ambiguous cases.",
+      "`custom_id` is mandatory for reliable processing; a duplicated ID makes matching ambiguous, so derive it from something stable and unique."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > What to Know (custom_id)"
+  },
+  {
+    "id": "q-s14-04",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Results must be usable within 36 hours of each document's arrival. Batch processing may take up to 24 hours; post-processing is negligible. What is the maximum safe submission cadence?",
+    "options": [
+      "Once a day — 24-hour cadence",
+      "Roughly every 12 hours — worst case is a document arriving just after a submission: cadence (12h) + batch window (24h) = 36h, exactly at the boundary; any longer cadence breaks the SLA",
+      "Every 36 hours",
+      "Cadence doesn't matter if batches are submitted reliably"
+    ],
+    "answer": 1,
+    "rationales": [
+      "24 + 24 = 48 hours worst case — twelve hours over the deadline.",
+      "The arithmetic is mechanical: max cadence = deadline − batch worst case − processing buffer. The slowest record (arriving one second after a submission) sets the constraint, not the average.",
+      "36 + 24 = 60 hours worst case.",
+      "Cadence is precisely the variable that determines the worst-case wait."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 14 > SLA Design"
+  },
+  {
+    "id": "q-s14-05",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When is a once-a-day batch submission actually safe?",
+    "options": [
+      "Whenever volume is high enough to fill a batch",
+      "Always — daily is the standard cadence",
+      "Only when the SLA is at least 48 hours (24h max wait for the next submission + 24h batch window) and you can absorb tail latency",
+      "Only on weekends when traffic is low"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Volume doesn't change the deadline math.",
+      "\"Standard\" cadences miss SLAs that are tighter than their worst case.",
+      "A record arriving just after today's submission waits ~24 hours, then up to 24 more in processing. Under a 48-hour SLA there is zero margin; under anything less, daily is unsafe.",
+      "Day of week has nothing to do with it."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > SLA Design (second example)"
+  },
+  {
+    "id": "q-s14-06",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "3% of a 50,000-document batch failed — some with `context_length_exceeded`, some with validation errors. What now?",
+    "options": [
+      "Rerun the whole batch — consistency matters",
+      "Ignore failures below 5%",
+      "Switch the failed documents to the real-time API at full price",
+      "Resubmit only the failures, handled by type: chunk the context-length failures and merge partials; resubmit validation failures with validation-error feedback; refine the prompt for prompt/schema issues"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Re-running 48,500 successful documents doubles their cost for zero benefit.",
+      "Three percent of 50,000 is 1,500 real documents someone needed.",
+      "Real-time pricing doesn't fix why they failed — the same errors recur at higher cost.",
+      "Each failure type has a targeted remedy, applied only to affected `custom_id`s. Expired or canceled results likewise get resubmitted individually."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 14 > Failure Handling"
+  },
+  {
+    "id": "q-s14-07",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which operational practices matter when running large batches?",
+    "options": [
+      "Stream/process the JSONL results incrementally; validate the request shape against the standard Messages API first — one malformed request won't fail the batch, it produces a per-request error you must reconcile; expect platform limits to force multiple batches",
+      "Load all results into memory for atomic processing",
+      "Skip request validation — the batch API validates for you",
+      "Submit everything as one batch regardless of size"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Three unglamorous practices that prevent three expensive surprises: memory blowups, silent per-request failures, and rejected oversized submissions.",
+      "Large-job results are exactly what incremental processing exists for.",
+      "The batch accepts malformed requests and reports them as per-request errors after the fact — pre-validation is cheaper.",
+      "Batch size and request counts have platform limits; large pipelines need multiple batches."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > What to Know (operational details)"
+  },
+  {
+    "id": "q-s14-08",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "Can the batch discount and prompt caching stack, and what is the caveat?",
+    "options": [
+      "No — the two mechanisms are mutually exclusive",
+      "Yes — batched requests support caching, so a shared prefix can be both cached and discounted; but cache hits inside an async batch are best-effort since requests may process far apart in time, and neither lever fixes the other's limits",
+      "Yes, and stacking removes the 24-hour window",
+      "Only with the five-minute TTL"
+    ],
+    "answer": 1,
+    "rationales": [
+      "They compose — that's part of the cost-lever playbook.",
+      "Stack them when the workload has both a repeated prefix and deferrable volume. But caching still doesn't enlarge the window or speed the batch, and the discount doesn't help a result needed now.",
+      "Nothing removes the 24-hour ceiling.",
+      "TTL choice affects hit rates, not whether stacking is possible."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > Batch and Prompt Caching"
+  },
+  {
+    "id": "q-s14-09",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "A team chooses batch processing purely because it's half price. What did they skip?",
+    "options": [
+      "Nothing — cost is the deciding factor",
+      "The model selection analysis",
+      "The latency and SLA analysis — batch fit is decided by whether the workflow tolerates up to 24 hours, and no discount rescues a missed deadline",
+      "The prompt engineering review"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Cost is one axis; the deadline axis vetoes.",
+      "Model tier is orthogonal to the batch decision.",
+      "Latency and SLA dominate the choice. Half price on results that arrive too late is a 100% loss.",
+      "Prompts transfer unchanged between batch and real-time."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > Common Pitfalls"
+  },
+  {
+    "id": "q-s14-10",
+    "section": 14,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A batch \"ended,\" but some results show `expired`. What is the correct handling?",
+    "options": [
+      "Resubmit only the incomplete `custom_id`s in a new batch",
+      "Treat expiry as permanent data loss",
+      "Resubmit the entire original batch",
+      "Escalate to support — expiry indicates a platform fault"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Individual results can succeed, error, be canceled, or expire — the response to incompletes is always targeted resubmission by ID.",
+      "Nothing is lost; the requests simply didn't process in the window.",
+      "Re-paying for every successful result to recover a few expired ones.",
+      "Expiry is a defined outcome to handle in code, not an incident."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 14 > Failure Handling (expired/canceled)"
+  }
+]

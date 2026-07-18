@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-13",
+    "section": 13,
+    "title": "Prompt Caching",
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>If your app sends the same big block of text — a system prompt, a tool catalog, a shared document — over and over, the API can remember its processed form and skip redoing the work. That's prompt caching. Cached tokens are roughly <strong>an order of magnitude cheaper to read</strong> than to process fresh, making caching one of the largest cost levers available — often ahead of model choice and prompt trimming.</p><p>Everything about caching follows from one rule: <strong>it's an exact prefix match</strong>. The request renders in a fixed order — tools, then system prompt, then messages — and the cache key is those exact bytes up to a breakpoint. Change a single byte early, and everything after it re-processes at full price. This is why most caching failures aren't missing markers; they're <em>unstable prefixes</em>.</p><p>So design by stability: deterministic tool definitions first, a frozen system prompt next, stable history, and volatile per-request content (latest turn, injected state) after the last breakpoint.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>The classic bug: someone helpfully interpolates \"Current date: 2026-07-18 14:32:07\" into the system prompt. Every request now has a unique prefix; the usage logs show cache writes accruing and <em>zero cache reads</em> — you're paying the write premium on every request and never collecting. Other silent invalidators: JSON serialized without sorted keys, tool lists built from unordered collections, per-session IDs early in the prompt, feature-flag-toggled prompt sections, and swapping the tool set (position zero — maximum blast radius) or model mid-conversation. Diagnosis is mechanical: byte-diff two consecutive rendered requests.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Operational facts: up to four breakpoints per request; default TTL five minutes (a one-hour option costs more to write); prefixes under a model-dependent minimum (~1–2K tokens) are <em>silently</em> not cached. The usage block reports writes and reads separately — verify, don't assume. Economics: writes cost slightly more than input, reads a small fraction; payback arrives at the second hit, and traffic arriving faster than the TTL keeps itself warm. Know when caching is the WRONG lever: context-window overflow (cost ≠ capacity), one-shot workloads (nothing repeats — pure write premium), and output-generation latency (cached input speeds prompt processing only). The lever-matching drill: repeated prefix → cache; deferrable volume → batch; over-tiered → smaller model; bloated unique content → trim. They compose.</p>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Exact prefix match — one changed byte invalidates everything after it.",
+          "Order by stability: tools, frozen system prompt, history, then volatile content after the last breakpoint.",
+          "Timestamps in system prompts are the classic cache-killer.",
+          "Verify with usage fields: zero reads on repeated traffic = silent invalidator; byte-diff to find it.",
+          "Caching fixes repeated-prefix cost — never capacity, one-shots, or output latency."
+        ]
+      }
+    ],
+    "resources": ["r-07"]
+  }
+]

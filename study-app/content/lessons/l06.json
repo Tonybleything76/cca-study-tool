@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-06",
+    "section": 6,
+    "title": "System Prompt Engineering and Conversational Behavior",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>The system prompt is the assistant's job description: role, tone, constraints, priorities. Two facts about it are constantly confused. First, it is <strong>not a one-time setup message</strong> — it must be sent with every request, and omitting it on later turns changes behavior <em>immediately</em>. Second, even when it IS sent every time, <strong>attention to it weakens as conversations grow</strong> — the model's own recent replies and the latest user turns compete with it. That drift is called dilution, and the fix is structural: reinforce at natural breakpoints, use examples, and move hard rules into code.</p><p>The deepest craft principle here: <strong>principles for judgment, conditionals for bright lines, code for guarantees</strong>. \"Adapt depth to the user's demonstrated expertise\" lets the model weigh dozens of implicit signals. Translating that into keyword conditionals (\"if user says X, assume novice\") forces shallow matching and misclassifies anyone atypical. Save explicit if-then rules for safety triggers, and move anything that must hold 100% of the time out of the prompt entirely.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>A support assistant's prompt has grown to sixty bulleted rules, and tone drifts after thirty turns even though the prompt is verifiably sent. Appending \"IMPORTANT: re-read all rules\" adds one more line to the pile it's trying to rescue. What works: condense the rules; replace the seven-sentence explanation of beginner-vs-expert summaries with <strong>two contrasting examples</strong> (examples are denser than prose for behavior the model must <em>learn</em> rather than recite); add brief user-role reminders at phase changes; and enforce the non-negotiables in code. XML-style tags (<code>&lt;role&gt;</code>, <code>&lt;safety&gt;</code>) help organize and make sections referenceable — useful, not magic.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Conversational behavior patterns that get tested:</p><ul><li><strong>Clarifying questions</strong>: ask when interpretations diverge materially, the action is irreversible/costly, or goals conflict — and ask ONE focused question, not a list. Otherwise proceed with a stated assumption the user can redirect.</li><li><strong>Conflicting preferences</strong> (\"cheapest flight\" + \"nonstop by 9 AM\"): name the tension and ask which constraint bends. Hidden compromises satisfy no one.</li><li><strong>Repetitive openers</strong>: style instruction + example of the desired opening. (The old prefill trick is rejected on current models.)</li><li><strong>State updates mid-session</strong>: the system prompt is the natural home for \"what's currently true\" — <em>except</em> on high-traffic cached agents, where rewriting it invalidates the cached prefix; there, inject state as a labeled block near the latest turn.</li><li><strong>Versioning</strong>: for multi-session conversations, treat the system prompt as living configuration; migrating personas mid-stream without versioning causes contradictions.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Send the system prompt every request; omission fails immediately, dilution degrades gradually.",
+          "Principles for judgment, conditionals for safety bright lines, code for 100% rules.",
+          "Contrasting few-shot examples beat long rule lists for subtle distinctions.",
+          "One focused clarifying question; name conflicts instead of averaging them.",
+          "On cached agents, keep the system prompt frozen and inject volatile state late."
+        ]
+      }
+    ],
+    "resources": ["r-18"]
+  }
+]

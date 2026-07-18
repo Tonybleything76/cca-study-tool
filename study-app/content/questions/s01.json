@@ -1,0 +1,244 @@
+[
+  {
+    "id": "q-s01-01",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A chat assistant forgets a fact the user stated two turns earlier, in a short conversation nowhere near the context limit. What is the most likely cause?",
+    "options": [
+      "The model's memory feature was not enabled for this API key",
+      "The application is not including those prior messages in the current request",
+      "The conversation exceeded the model's attention span",
+      "The system prompt is overriding the user's earlier statements"
+    ],
+    "answer": 1,
+    "rationales": [
+      "There is no memory flag to enable — the Messages API is stateless by design, so memory is always the application's job.",
+      "The model only sees what the request contains. If a fact from two turns ago is missing, the application almost certainly didn't send those messages.",
+      "A short conversation is nowhere near any attention boundary; this explanation doesn't fit the evidence.",
+      "System prompts shape behavior but don't erase conversation content that was actually sent."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 1 > What to Know (statelessness)"
+  },
+  {
+    "id": "q-s01-02",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A developer passes a `session_id` with every API request and expects Claude to remember the conversation. What does `session_id` actually do?",
+    "options": [
+      "It tells Claude which stored conversation to load before responding",
+      "It enables server-side memory for up to 24 hours",
+      "It links requests for billing purposes but has no memory effect",
+      "Nothing for the model — it can help your own system locate stored history, but Claude only sees what the request contains"
+    ],
+    "answer": 3,
+    "rationales": [
+      "The API has no conversation store to load from — history must be sent in the `messages` array.",
+      "No such server-side memory mechanism exists in the stateless Messages API.",
+      "Close, but incomplete — a session identifier is purely an application-side concept, not an API billing feature.",
+      "A `session_id` is only meaningful to your product's own database or orchestration layer. The model's view is exactly the request content, nothing more."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 1 > What to Know (session_id)"
+  },
+  {
+    "id": "q-s01-03",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "What does `tool_choice: \"any\"` guarantee?",
+    "options": [
+      "The model must call one of the provided tools rather than answering in plain text",
+      "The model may call any tool, including ones not defined in the request",
+      "The model decides freely between calling a tool and answering normally",
+      "The model calls every provided tool once"
+    ],
+    "answer": 0,
+    "rationales": [
+      "`any` forces a tool call from the provided set — useful when a tool call must happen but you can't pick which schema in advance.",
+      "Models can only ever call tools defined in the request.",
+      "That describes `auto`, the default.",
+      "No setting calls all tools; the model picks one appropriate tool per call."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 1 > tool_choice table"
+  },
+  {
+    "id": "q-s01-04",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A pipeline has several tools available, but `extract_metadata` must always run first before any enrichment calls. What is the reliable way to enforce that?",
+    "options": [
+      "List `extract_metadata` first in the tools array so the model prefers it",
+      "Add \"always call extract_metadata first\" to the system prompt",
+      "Set `tool_choice` to `{\"type\": \"tool\", \"name\": \"extract_metadata\"}` for the first call, then make subsequent calls for enrichment",
+      "Give the other tools names that sort alphabetically after extract_metadata"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Tool definition order is not a reliable priority signal.",
+      "Prompt instructions influence but don't guarantee — edge cases will still skip the required first step.",
+      "Naming a specific required tool in `tool_choice` makes the first call deterministic; the sequencing lives in your orchestration code, not in model judgment.",
+      "Tool name ordering has no defined effect on selection."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 1 > Structured Outputs and Tool Use (tool_choice named tool)"
+  },
+  {
+    "id": "q-s01-05",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When should you choose JSON structured outputs (`output_config.format`) over defining an extraction tool?",
+    "options": [
+      "When you need the schema enforced — tools cannot enforce schemas",
+      "When the final assistant response itself should be validated JSON, rather than an intermediate tool call in a workflow",
+      "When the schema is large, because structured outputs have no token cost",
+      "Never — tool use supersedes structured outputs"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Both mechanisms enforce schemas; the difference is where the structured data appears, not whether it's enforced.",
+      "That's the dividing line: structured outputs constrain the response body itself; tool use fits function calls, extraction steps, and intermediate agent actions. They can be combined in one workflow.",
+      "Schemas count toward input/overhead tokens in both approaches.",
+      "Both are current, supported mechanisms with different roles."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 1 > Structured Outputs and Tool Use as Output Control"
+  },
+  {
+    "id": "q-s01-06",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A team's code ends each request with a partially-written assistant message so the model will continue it (\"prefill\"). On current-generation models (Claude 4.6 family and later), what happens?",
+    "options": [
+      "The model continues from the partial text as before",
+      "The partial message is silently ignored",
+      "The model treats the partial text as a user instruction",
+      "The request returns a validation error — prefill is legacy; use structured outputs, enum schema fields, or system prompt instructions instead"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Continuation from a trailing assistant message is exactly the behavior that was removed.",
+      "It isn't ignored — the request is rejected outright.",
+      "It never reaches interpretation; validation rejects the request shape first.",
+      "A request whose final message is an assistant turn now fails validation. Each prefill use case has a modern replacement: schemas for format, enums for labels, system instructions for suppressing preamble."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 1 > Partial Assistant Prefill (Legacy)"
+  },
+  {
+    "id": "q-s01-07",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Users report that a chat assistant gets slower and more expensive the longer a session runs. What is the most likely cause?",
+    "options": [
+      "Input token growth — every turn resends the full conversation history, so cost and latency rise with each message",
+      "The model allocates more thinking time to longer conversations",
+      "Database queries for conversation history are slowing down",
+      "The API applies a surcharge to long-running sessions"
+    ],
+    "answer": 0,
+    "rationales": [
+      "This is the signature of the stateless API: history is resent and re-processed every turn, so input tokens — and with them latency and cost — grow monotonically.",
+      "Reasoning effort doesn't scale with conversation length by default.",
+      "Retrieval from your own store is typically milliseconds; the growth pattern points at token volume.",
+      "There is no session surcharge; billing is per token."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 1 > Token Growth in Extended Conversations"
+  },
+  {
+    "id": "q-s01-08",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "An extraction system uses a detailed 12-field tool schema (~2,500 tokens) on long documents. Accuracy is fine early in each document but degrades on content near the end. What is the root cause?",
+    "options": [
+      "The model reads documents front-to-back and fatigues",
+      "The schema's field descriptions are too vague",
+      "Total context consumption — schema plus long document approaches the effective attention boundary, degrading accuracy on late content",
+      "Structured outputs truncate long documents automatically"
+    ],
+    "answer": 2,
+    "rationales": [
+      "\"Fatigue\" isn't the mechanism — position only matters because total context is nearly exhausted.",
+      "Vague descriptions would degrade accuracy uniformly, not specifically near the document's end.",
+      "Large schemas spend the same context budget documents need. When combined input approaches the limit, content near the end sits closest to the attention boundary and suffers first. The fix is budgeting total context, not blaming the model.",
+      "No such truncation exists; the degradation is attentional, not a hard cut."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 1 > Structured Outputs (schema token cost)"
+  },
+  {
+    "id": "q-s01-09",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An extraction passes schema validation but fails a semantic check in application code (an implausible date). What is the most effective next call?",
+    "options": [
+      "Retry the identical request — extraction is stochastic, so it may succeed",
+      "Call Claude again with the source document, the invalid extraction, and the specific validation errors",
+      "Lower the temperature and retry the same prompt",
+      "Switch to a larger model for all extractions"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Blind retries re-roll the same dice at full cost — no new information reaches the model.",
+      "The validation-error feedback loop gives the model exactly what it needs to correct the specific failure. This is far more effective than any retry of the unchanged prompt.",
+      "Temperature changes randomness, not the model's understanding of what was wrong.",
+      "A bigger model is a cost increase, not a targeted fix, and may repeat the same semantic error."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 1 > Structured Outputs (validation-error feedback loop)"
+  },
+  {
+    "id": "q-s01-10",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "Which statement about JSON structured outputs' operational behavior is TRUE?",
+    "options": [
+      "Schema compliance guarantees the values are factually correct",
+      "Schema compilation is instant because schemas are interpreted per-request",
+      "Once a schema compiles, every response is guaranteed to conform",
+      "The first request with a new schema may add latency while its grammar compiles; refusals or max-token stops can still yield nonconforming output, so domain validation remains necessary"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Schemas constrain shape, never truth — a well-formed wrong value passes.",
+      "First use pays a compilation cost; schemas are then cached for reuse.",
+      "Refusals and `max_tokens` cutoffs can still produce nonconforming output.",
+      "All three operational caveats are real: first-use compile latency, caching thereafter, and edge cases where output still doesn't conform. Schema compliance is not a substitute for domain validation."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 1 > Structured Outputs (operational implications)"
+  },
+  {
+    "id": "q-s01-11",
+    "section": 1,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "Where does the system prompt go in a Messages API request?",
+    "options": [
+      "In the top-level `system` parameter — not as a message with a \"system\" role",
+      "As the first message in `messages` with `\"role\": \"system\"`",
+      "In a `metadata.instructions` field",
+      "Concatenated to the front of the first user message"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The Messages API takes system prompts via the dedicated top-level `system` parameter; `messages` holds user and assistant turns only.",
+      "There is no \"system\" role in the Messages API's `messages` array.",
+      "`metadata` is not an instruction channel.",
+      "Prepending to the user message works crudely but is not the API's system prompt mechanism and loses its special treatment."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 1 > What to Know (system parameter)"
+  }
+]

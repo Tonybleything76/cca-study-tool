@@ -1,0 +1,244 @@
+[
+  {
+    "id": "q-s03-01",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "A read-only API call inside a tool times out, and immediate retries usually succeed. Where should the retry happen?",
+    "options": [
+      "At the model level — return the error so the agent can decide",
+      "Inside the tool, with backoff — the model doesn't need to see transient infrastructure noise",
+      "At the user level — ask them to try again later",
+      "Nowhere — timeouts should end the session for safety"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Sending it to the model costs a turn and tokens for a decision that has only one right answer.",
+      "Transient failures on safe reads are the tool's job to absorb. Surface only the final success or failure.",
+      "Punting recoverable infrastructure noise to users is the worst experience available.",
+      "A read timeout threatens nothing; ending the session is wildly disproportionate."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > What to Know (retry inside tool)"
+  },
+  {
+    "id": "q-s03-02",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A `search_catalog` tool fails 12% of the time: ~8% transient timeouts that succeed on retry, ~4% syntax errors in user-provided filters that never succeed. Today both return the same generic error. What is the correct redesign?",
+    "options": [
+      "Return `retryable: true` for timeouts and `retryable: false` for syntax errors, and let the agent handle both",
+      "Retry everything twice inside the tool before returning any error",
+      "Return richer error text describing both possibilities so the model can judge",
+      "Retry transient errors inside the tool with backoff, surfacing only final outcomes; surface syntax errors immediately with validation details the model can correct"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Better than nothing, but the boolean still spends a model turn on retries the tool could do itself — and the agent may retry anyway.",
+      "Retrying syntax errors wastes time on failures that can never succeed.",
+      "Describing ambiguity doesn't resolve it; the tool knows which category occurred and should act on that knowledge.",
+      "Each failure class gets handled where the needed information lives: the tool absorbs recoverable noise; the model gets actionable detail for input errors it can actually fix."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 3 > Retry Responsibility"
+  },
+  {
+    "id": "q-s03-03",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "For an MCP `check_availability(user_email)` tool, a caller omits the required `user_email` parameter entirely. Separately, a correct call finds the calendar API returns 404 because the user doesn't exist. How are these two classified?",
+    "options": [
+      "Omitted required parameter = protocol error (JSON-RPC); user-not-found = tool execution error with `isError: true`",
+      "Both are protocol errors — each violates the tool's contract",
+      "Both are tool execution errors — the tool was named correctly in both",
+      "Omitted parameter = execution error; 404 = protocol error since it's an HTTP failure"
+    ],
+    "answer": 0,
+    "rationales": [
+      "A structurally malformed call (missing schema-mandated parameter) never validly invokes the tool — protocol tier. A correctly invoked tool whose operation fails (missing record, 503) reports through `isError: true`.",
+      "The 404 case invoked the tool correctly; the failure is in the operation, not the protocol.",
+      "The missing-parameter call fails schema validation before the tool ever runs.",
+      "Backwards on both: HTTP status codes from upstream APIs are operation outcomes, not MCP protocol failures."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 3 > MCP Error Tiers"
+  },
+  {
+    "id": "q-s03-04",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An MCP tool's upstream service returns 503 (temporarily down). The developer makes the server raise a JSON-RPC error. Why is this wrong?",
+    "options": [
+      "JSON-RPC errors are reserved for authentication failures only",
+      "It isn't wrong — infrastructure failures are protocol-level by definition",
+      "The tool was invoked correctly and the operation failed — that is a tool execution error (`isError: true`), not a protocol failure; business and backend failures must not masquerade as protocol errors",
+      "503 responses should be silently converted into empty results"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Protocol errors cover malformed requests, unknown tools, and schema violations — not upstream availability.",
+      "The protocol operation succeeded: a valid call reached a real tool. What failed is the work the tool attempted.",
+      "The two tiers carry different meanings to clients: protocol errors say \"your request was malformed,\" execution errors say \"your valid request's operation failed.\" Blurring them misleads every consumer of the server.",
+      "Empty results would falsely signal \"success, nothing found\" — a worse lie than the tier confusion."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > MCP Error Tiers"
+  },
+  {
+    "id": "q-s03-05",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A payment tool's API call times out after the charge request was submitted. The tool cannot know whether the charge went through. What should it return?",
+    "options": [
+      "A retryable error, since timeouts are transient by nature",
+      "An error communicating uncertainty — the charge may have succeeded; do not retry without an idempotency check; verify via status lookup or confirm with the user",
+      "Success, since most submitted charges complete",
+      "A validation error asking the model to check the card details"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Marking it retryable invites the double charge — the retry-safety of timeouts applies to reads, not submitted writes.",
+      "Uncertain write state is its own category: report the uncertainty explicitly, block automatic retry, and steer the agent toward verification. This is the inverse of read-side timeout handling.",
+      "Fabricating certainty the tool doesn't have — some of those \"successes\" never charged, and some retries would charge twice.",
+      "The inputs weren't the problem; misclassifying this hides the real hazard."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 3 > Uncertain Side Effects"
+  },
+  {
+    "id": "q-s03-06",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A warranty-claim tool determines the device is outside its warranty window. How should it report this?",
+    "options": [
+      "Throw an exception so the framework logs the rejection",
+      "Return an empty result — no claim was created",
+      "Return a retryable error in case the dates were wrong",
+      "Return a structured non-retryable business-rule error with a customer-facing explanation and next steps (paid repair, escalation for exception review)"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Frameworks often hide exception details from the model — the agent learns nothing usable.",
+      "Empty results mean \"success with no matches\"; this is a definitive business outcome, not an absence.",
+      "Business rules don't change on retry; marking it retryable wastes turns.",
+      "Business-rule failures are expected outcomes deserving structure: category, retryable=false, an explanation the agent can relay, and concrete next steps to offer."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > Structured Error Results (business rule)"
+  },
+  {
+    "id": "q-s03-07",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When is model-level retry (surfacing the error to the agent) the RIGHT design?",
+    "options": [
+      "When the inputs or strategy need to change — validation failures, filter syntax errors, wrong identifiers",
+      "When the backend is briefly overloaded",
+      "When the operation may have already caused a side effect",
+      "Whenever latency budget allows the extra turn"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The model should retry only what the model can fix — errors where new inputs or a different approach are needed, guided by structured validation details.",
+      "Transient overload is tool-level retry territory; the same request will succeed.",
+      "Uncertain side effects need verification or human confirmation, not any automatic retry.",
+      "Retry placement follows where the corrective information lives, not spare latency."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > Retry Responsibility"
+  },
+  {
+    "id": "q-s03-08",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A team adds `retryable: true/false` to every error and considers transient-failure handling done. What does this design still cost, compared to retrying inside the tool?",
+    "options": [
+      "Nothing — the boolean gives the agent everything it needs",
+      "It only fails when the boolean is set incorrectly",
+      "Slightly larger payloads, but identical behavior",
+      "Every transient failure still burns a model turn (tokens + latency) to make a decision with one right answer — and the agent may ignore the flag and retry anyway"
+    ],
+    "answer": 3,
+    "rationales": [
+      "The agent must still receive the error, reason about it, and reissue the call — every time.",
+      "Even with perfect flags, the turn cost and behavioral risk remain.",
+      "Behavior is not identical: one design absorbs the noise, the other routes it through the model.",
+      "A flag is advice; in-tool retry with backoff is behavior. For failures where retrying is unambiguously correct, encode the behavior, not the advice."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > Retry Responsibility (retryable boolean)"
+  },
+  {
+    "id": "q-s03-09",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A tool's backend API fails, and the tool returns `{\"results\": []}`. Why is this dangerous?",
+    "options": [
+      "It leaks backend implementation details to the model",
+      "The agent reads it as \"success — nothing matches\" and confidently reports wrong information instead of recognizing a failure",
+      "Empty arrays are invalid JSON in tool results",
+      "It forces an unnecessary retry loop"
+    ],
+    "answer": 1,
+    "rationales": [
+      "An empty array leaks nothing — the problem is what it falsely asserts.",
+      "Empty-result-on-failure converts an outage into misinformation: \"the customer has no orders\" versus \"I couldn't check the orders.\" Failures must be distinguishable from absence.",
+      "Empty arrays are perfectly valid JSON.",
+      "The opposite — the agent won't retry because nothing looks wrong."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 3 > Common Pitfalls (empty data for failures)"
+  },
+  {
+    "id": "q-s03-10",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "Why should expected business errors be returned as structured results rather than thrown as exceptions?",
+    "options": [
+      "Exceptions are slower to process than return values",
+      "Exceptions crash the agent loop permanently",
+      "Frameworks often hide exception details from the model, leaving the agent with no usable information to correct or explain the failure",
+      "Structured results are encrypted; exceptions are not"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Performance isn't the issue; information loss is.",
+      "Most frameworks survive exceptions — they just swallow the detail.",
+      "An expected failure is information the agent needs: category, explanation, next steps. Exceptions tend to reach the model as a generic opaque failure, if at all.",
+      "Encryption has nothing to do with it."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > Common Pitfalls (exceptions)"
+  },
+  {
+    "id": "q-s03-11",
+    "section": 3,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A tool returns \"Error: something went wrong, please try again\" for every failure: timeouts, invalid dates, permission denials, and payment-submission timeouts alike. Which consequence is NOT caused by this design?",
+    "options": [
+      "The model runs out of context window faster due to error verbosity",
+      "The agent retries permanent failures that can never succeed",
+      "Duplicate side effects when submitted writes are retried",
+      "Users told to \"try again later\" for problems the agent could have fixed immediately"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Correct — this is the one consequence the design does NOT cause. The message is short; context exhaustion isn't the failure mode. The other three are exactly what generic errors produce.",
+      "With no category information, the agent can't distinguish a bad date (fixable now) from a timeout, so it retries both.",
+      "\"Please try again\" on an uncertain write is an instruction to create duplicates.",
+      "Fixable validation errors get deferred as if they were infrastructure problems."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 3 > What to Know (error categories)"
+  }
+]

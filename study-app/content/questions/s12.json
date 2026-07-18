@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s12-01",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "Match the model tiers to their typical architecture roles.",
+    "options": [
+      "Haiku: classification, routing, high-volume simple steps · Sonnet: default production workhorse · Opus: complex agentic work and hard analysis",
+      "Haiku: hard analysis · Sonnet: routing · Opus: classification",
+      "All tiers are interchangeable; pick by price alone",
+      "Haiku: development · Sonnet: staging · Opus: production"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The capability/cost/latency spectrum maps to workload steps: cheap-fast for mechanical volume, balanced for most pipelines, top tier for the genuinely hard parts.",
+      "Inverted — the smallest tier doesn't lead on hard analysis.",
+      "Price tracks capability; treating tiers as interchangeable ignores the spectrum's purpose.",
+      "Tiers map to task difficulty, not deployment environments."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > What to Know (tier table)"
+  },
+  {
+    "id": "q-s12-02",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "\"We default everything to the largest model to be safe.\" What is the correct assessment of this policy?",
+    "options": [
+      "Sound — quality risk always outweighs cost",
+      "Sound for customer-facing workloads, wasteful otherwise",
+      "It's a budget decision dressed up as a safety decision — try the cheaper model and escalate on measurable signals: low calibrated confidence, failed validation, an explicit needs-deeper-analysis classification",
+      "Sound as long as prompt caching is enabled"
+    ],
+    "answer": 2,
+    "rationales": [
+      "\"Always\" is doing unexamined work in that sentence — most steps show no quality gain from the top tier.",
+      "Customer-facing intent classification is still classification; the audience doesn't change the task's difficulty.",
+      "Escalate on signal, not by default. Defined triggers give you top-tier quality where it matters at a fraction of blanket cost.",
+      "Caching discounts repeated prefixes; it doesn't fix a 9× tier mismatch."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 12 > What to Know (escalate on signal)"
+  },
+  {
+    "id": "q-s12-03",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Why can a coordinator on a capable model safely delegate subtasks to cheaper-model subagents?",
+    "options": [
+      "Subagents automatically inherit the coordinator's capability",
+      "Because the subtask prompts are focused — exploring files, summarizing one document, checking one repo — the capability gap matters less than it would on the open-ended task",
+      "It can't — mixed tiers produce inconsistent outputs",
+      "Cheaper models are faster, which compensates for lower quality"
+    ],
+    "answer": 1,
+    "rationales": [
+      "No capability transfers — each agent runs its own model.",
+      "Task scoping is the trick: a narrow, well-specified job needs less general capability. The expensive model does the open-ended orchestration; the cheap ones do the bounded legwork.",
+      "Mixing tiers across agents is a recommended cost pattern, validated with evals.",
+      "Speed doesn't offset capability — scope does."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > What to Know (mix tiers across agents)"
+  },
+  {
+    "id": "q-s12-04",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "How does reasoning ('thinking') work on current Claude models?",
+    "options": [
+      "You set a fixed thinking-token budget per request",
+      "Thinking is always on at maximum depth",
+      "Thinking must be re-enabled every turn",
+      "Adaptively — the model decides when and how much to think, scaled by a request-level effort setting; the old manually-configured thinking budget is deprecated as a legacy control"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Fixed budgets are the legacy mechanism, replaced by adaptive thinking.",
+      "Depth scales with the task and the effort setting — that's the point of 'adaptive.'",
+      "No per-turn re-enabling exists.",
+      "Effort is a graded, per-request dial over reasoning, tool use, and output — another allocation lever beside tier, caching, and batching."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > Thinking and Effort"
+  },
+  {
+    "id": "q-s12-05",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which task genuinely benefits from higher reasoning effort?",
+    "options": [
+      "Classifying support tickets as billing / technical / other",
+      "Planning a database migration with ambiguous requirements to reconcile and indirect evidence to debug from",
+      "Extracting invoice numbers from a standard template",
+      "Converting dates to ISO format"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Mechanical classification — buy accuracy with schemas and few-shot examples, not reasoning tokens.",
+      "Reasoning-shaped work: multi-step planning, ambiguity reconciliation, inference from indirect evidence. This is where deeper thinking converts into better answers.",
+      "Template extraction is pattern application, not reasoning.",
+      "Deterministic transformation — no reasoning to deepen."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 12 > Thinking and Effort (where to spend reasoning)"
+  },
+  {
+    "id": "q-s12-06",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When is streaming the right choice — and when is it pointless?",
+    "options": [
+      "Right when a human is watching (time-to-first-token dominates perceived latency) or outputs are long (blocking requests risk timeouts); pointless when nothing consumes partial output, like batch jobs and short machine-to-machine calls",
+      "Always right — streaming improves response quality",
+      "Right only for code generation",
+      "Pointless always — it costs extra tokens"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Streaming changes delivery, not quality or cost. Its value is perceived speed for humans and connection survival for long outputs — absent a consumer of partial output, it buys nothing.",
+      "Quality is unchanged; only delivery timing differs.",
+      "Content type is irrelevant; consumption pattern decides.",
+      "It costs nothing extra — and for long outputs it's practically required."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > Streaming"
+  },
+  {
+    "id": "q-s12-07",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Two responses come back incomplete: one with `stop_reason: max_tokens`, one with `model_context_window_exceeded`. What's the difference?",
+    "options": [
+      "They're synonyms for the same limit",
+      "The first is a model defect; the second is an API bug",
+      "Both are fixed by retrying with backoff",
+      "`max_tokens` means the OUTPUT hit the cap you set — raise it, stream, or split; `model_context_window_exceeded` means the INPUT no longer fits the window — compact, trim, or summarize; retrying unchanged cannot succeed. Log which occurred or you'll fix the wrong limit"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Different limits: your output budget vs the model's input window.",
+      "Neither is a defect — both are limits with defined remedies.",
+      "Retry helps neither: same request, same overflow.",
+      "The two look identical from the outside (incomplete work), which is exactly why production code must branch on the stop reason."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 12 > Stop Reasons"
+  },
+  {
+    "id": "q-s12-08",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A response returns `stop_reason: pause_turn`. What does production code do?",
+    "options": [
+      "Treat it as an error and alert on-call",
+      "Restart the conversation from the beginning",
+      "Re-send the conversation as-is — a long-running server-side operation paused the turn and it will resume",
+      "Switch to a larger model"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Not an error — a defined pause in a long-running operation.",
+      "Restarting discards the paused work.",
+      "The handling is deliberately boring: send the conversation back unchanged and the turn resumes.",
+      "Model size is unrelated to a paused server-side operation."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > Stop Reasons (pause_turn)"
+  },
+  {
+    "id": "q-s12-09",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A response ends with `stop_reason: refusal`. What is the correct handling?",
+    "options": [
+      "Surface it to the user or route to review — do NOT blind-retry the same prompt",
+      "Retry immediately; refusals are stochastic",
+      "Retry with higher temperature",
+      "Downgrade to a smaller model, which refuses less"
+    ],
+    "answer": 0,
+    "rationales": [
+      "A safety-based decline won't flip on resubmission of the identical request; handle it as a workflow branch, not a transient fault.",
+      "Blind-retrying refusals wastes spend and can look like circumvention attempts.",
+      "Temperature doesn't change safety assessments.",
+      "Tier-shopping for compliance is not a handling strategy."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > Stop Reasons (refusal)"
+  },
+  {
+    "id": "q-s12-10",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Your service gets occasional 429s at traffic spikes. What is the right handling stack?",
+    "options": [
+      "Catch 429s and immediately resend until they pass",
+      "Honor `retry-after`, use exponential backoff with jitter, smooth bursts client-side — and remember the official SDKs already retry rate limits and transient server errors automatically",
+      "Treat 429s like 400s: fix the request",
+      "Open a support ticket per occurrence"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Tight-loop resending amplifies the very burst being throttled.",
+      "The layered answer: respect the server's signal, back off with jitter, shape traffic — and don't hand-roll retry loops the SDK already provides.",
+      "400s are malformed requests; 429s are capacity timing. Different families, different fixes.",
+      "Occasional spike throttling is normal operation, not an incident."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > API-Level Errors and Rate Limits"
+  },
+  {
+    "id": "q-s12-11",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A document pipeline hits sustained token-per-minute throttling while its request count stays modest. What is the correct interpretation and response?",
+    "options": [
+      "The SDK's retry logic is broken — replace it",
+      "The API is misconfigured — request counts were fine",
+      "Sustained 429s are a capacity-planning signal, not an error-handling bug: rate limits are per model and measured in tokens as well as requests, so spread load, move deferrable volume to the Batch API, request higher limits, or split across models with separate pools",
+      "Shorten prompts until the throttling stops"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Retries are working — they're retrying into an exhausted budget.",
+      "Token-heavy workloads legitimately hit token-per-minute limits with low request counts; nothing is misconfigured.",
+      "When throttling is sustained, the fix is architectural: reshape when, where, and through which pools the volume flows.",
+      "Trimming helps marginally but doesn't address a structurally over-budget workload."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > API-Level Errors (sustained 429s)"
+  },
+  {
+    "id": "q-s12-12",
+    "section": 12,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "How should you get exact input token counts for budgeting a long-document workload?",
+    "options": [
+      "Estimate at 4 characters per token",
+      "Use a popular third-party tokenizer library",
+      "Submit the request and read the usage from the error",
+      "The API's token-counting endpoint — model-specific, exact, and free; third-party tokenizers are calibrated to other vocabularies and miscount, especially on code and non-English text"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Heuristics drift badly on code, JSON, and non-English content — exactly the long-document cases that matter.",
+      "Other providers' tokenizers count other providers' tokens.",
+      "Paying for a failed request to learn its size is the expensive version of a free endpoint.",
+      "Count first, then chunk, batch, and budget with real numbers."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 12 > Token Counting"
+  }
+]

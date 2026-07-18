@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-11",
+    "section": 11,
+    "title": "Iterative Refinement, Testing, and Evaluation",
+    "minutes": 6,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>Claude improves fastest on feedback that is <strong>concrete and executable</strong>. \"Handle edge cases better\" gives the model nothing to locate. \"For input X, the expected key <code>service_visits</code> is missing because the source says 'maintenance entries' — here's the excerpt\" lets it fix exactly that. The iteration loop for code: define behavior with tests, ask for the smallest useful implementation, run the tests, feed back exact failures, and fix <em>one failure class at a time</em>.</p><p>When the same defect recurs across runs of the same prompt, stop retrying — that's a signal the prompt or schema needs a <strong>structural change</strong> (a few-shot example, a split tool, a new field). Structural fixes generalize; retries don't. And when requirements are genuinely uncertain (caching, auth, consistency), have Claude interview you and surface the decisions <em>before</em> implementing.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>A code review agent floods PRs with noise. What it needs isn't a bigger model — it's <strong>explicit criteria</strong>: report bugs, security, data loss, missing tests, breaking API changes; skip style nits and speculative performance advice. To cut false positives, show 2–3 examples of acceptable patterns <em>next to</em> genuinely problematic ones — far more effective than \"be conservative.\" And when developers dismiss findings, capture <code>detected_pattern</code> / <code>rule_id</code> / <code>evidence</code> fields so dismiss rates can be aggregated by pattern and the noisy patterns suppressed. Dismissals are feedback, not noise.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Evaluation discipline: segment results by document type, field, prompt version, model, source quality, confidence band, and correction category. Aggregate accuracy misleads — 97% overall can hide a critical field at 80%. Watch for the low-value generated test smells: asserting only that code doesn't throw, duplicating coverage, ignoring fixtures, testing implementation instead of behavior, missing error paths — and fix them by documenting test standards with contrasting examples. Finally, resist infrastructure-first responses: before building validation microservices, try the cheap high-leverage fixes (examples, criteria, schema changes) that usually solve recurring patterns.</p>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Feedback = failing input + expected vs actual + the trigger. Vague requests produce vague fixes.",
+          "Recurring defects demand structural prompt/schema changes, not retries.",
+          "Review agents need explicit report/skip criteria and contrasting few-shot examples.",
+          "Instrument dismissals (pattern, rule, evidence) to turn them into improvements.",
+          "Segment every evaluation — aggregates hide localized failure."
+        ]
+      }
+    ],
+    "resources": ["r-36"]
+  }
+]

@@ -1,0 +1,222 @@
+[
+  {
+    "id": "q-s11-01",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which feedback actually helps Claude fix an extraction defect?",
+    "options": [
+      "\"It's not handling edge cases well — be more careful\"",
+      "\"The output quality has been declining lately\"",
+      "\"For input X, the expected key `service_visits` is missing because the source says 'maintenance entries' instead — here's the excerpt and the rule violated\"",
+      "\"Try again, but better\""
+    ],
+    "answer": 2,
+    "rationales": [
+      "Nothing to locate, nothing to act on.",
+      "A trend report without a single failing example.",
+      "Concrete and executable: specific input, expected vs actual, the trigger, the rule. The model can fix exactly that — and the fix generalizes to the pattern.",
+      "A retry request, not feedback."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 11 > Effective Iteration"
+  },
+  {
+    "id": "q-s11-02",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Requirements for a caching layer are genuinely uncertain — consistency needs, invalidation, TTLs are all fuzzy. What should Claude do before implementing?",
+    "options": [
+      "Interview the user — surface the decisions and trade-offs that must be resolved before code is written",
+      "Implement the most common caching pattern and iterate",
+      "Implement all plausible variants behind feature flags",
+      "Wait for a complete written specification"
+    ],
+    "answer": 0,
+    "rationales": [
+      "For caching, real-time architecture, auth, and data consistency, wrong assumptions are expensive to unwind. Asking Claude to surface decisions first turns hidden assumptions into explicit choices.",
+      "Common patterns encode assumptions the user hasn't agreed to — precisely the risk.",
+      "Speculative variants multiply cost and complexity before understanding exists.",
+      "Passive waiting wastes the model's ability to elicit the requirements."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Effective Iteration (interview for uncertain requirements)"
+  },
+  {
+    "id": "q-s11-03",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "The same defect keeps recurring across many runs of the same prompt. What does this signal?",
+    "options": [
+      "The model needs more retries with slight temperature variation",
+      "The task exceeds the model's capability",
+      "Random noise — occasional defects are expected",
+      "The prompt or schema needs a structural change — a few-shot example, a split tool, a new field. Prompt-level fixes generalize; per-instance retries do not"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Retries re-sample the same flawed setup.",
+      "Recurrence under one prompt indicts the prompt before the model.",
+      "Recurring is the opposite of random — a stable pattern is a signal.",
+      "Repetition means the failure is structural. Change the structure once and every future run benefits."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 11 > Effective Iteration (recurring defects)"
+  },
+  {
+    "id": "q-s11-04",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Generated tests keep asserting only that functions don't throw, duplicating coverage, and ignoring project fixtures. What is the fix?",
+    "options": [
+      "Generate more tests so the good ones outnumber the bad",
+      "Document test standards in project memory or a testing guide — examples of valuable behavioral tests vs trivial ones, fixture names and intended use",
+      "Have a second model filter the weak tests",
+      "Stop generating tests; write them manually"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Volume multiplies the pattern, not the quality.",
+      "The model produces low-value tests because it doesn't know what this project values. Standards with contrasting examples and fixture documentation teach it — durably, for every future session.",
+      "A filter model needs the same standards defined anyway; define them once where generation can use them.",
+      "Abandoning generation forfeits the value that better guidance would recover."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Test Generation Quality"
+  },
+  {
+    "id": "q-s11-05",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A code review agent is noisy and inconsistent. What does it need most?",
+    "options": [
+      "A larger model tier",
+      "Permission to auto-fix what it finds",
+      "Longer context so it can read the whole codebase",
+      "Explicit report criteria: which findings matter (bugs, security, data loss, missing tests, breaking API changes) and what to skip (style nits, accepted conventions, speculative performance advice)"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Capability without criteria produces confident noise.",
+      "Auto-fixing amplifies the noise problem into a change-control problem.",
+      "More visibility without a definition of \"reportable\" means more findings, not better ones.",
+      "A review agent is only as good as its definition of signal. Explicit include/skip criteria is the foundation everything else builds on."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Code Review Agents"
+  },
+  {
+    "id": "q-s11-06",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "To reduce a review agent's false positives, which intervention works best?",
+    "options": [
+      "Few-shot examples showing acceptable code patterns side-by-side with genuinely problematic ones",
+      "Adding \"be conservative and only report real issues\" to the prompt",
+      "Lowering the maximum findings count per review",
+      "Running the review twice and reporting only overlapping findings"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The agent's problem is a fuzzy boundary between acceptable and problematic. Contrasting examples draw the line concretely — the reliably effective fix.",
+      "\"Be conservative\" is vague instruction against a boundary problem; the model doesn't know where your line is.",
+      "A cap truncates output without improving judgment — real issues may be what gets cut.",
+      "Consensus filters random noise, not systematic misjudgment — both runs share the same fuzzy boundary."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 11 > Code Review Agents (false positive reduction)"
+  },
+  {
+    "id": "q-s11-07",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Developers dismiss 35% of a review agent's findings, but the team can't tell what to fix. What fields make the dismissals actionable?",
+    "options": [
+      "Reviewer name and timestamp",
+      "The full diff for each dismissed finding",
+      "`detected_pattern`, `rule_id`, and `evidence` — so dismiss rates can be aggregated by pattern and the over-reporting patterns can be suppressed in the prompt criteria",
+      "A severity score from 1 to 10"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Who dismissed when doesn't reveal what construct triggered the noise.",
+      "Raw diffs require manual re-analysis of every dismissal.",
+      "Without pattern-level fields you can only see \"35% dismissed,\" not which kinds of findings to suppress. With them, dismissals become a targeted improvement loop.",
+      "Severity doesn't explain why findings were judged wrong."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Code Review Agents (dismissed findings)"
+  },
+  {
+    "id": "q-s11-08",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Along which dimensions should an extraction pipeline's evaluation results be segmented?",
+    "options": [
+      "By model version only — everything else is noise",
+      "Document type, field, prompt version, model, source quality, confidence band, and reviewer correction category",
+      "By calendar week",
+      "By reviewer, to identify strict graders"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Model version is one axis of many — failures cluster along the others too.",
+      "Aggregate accuracy misleads; segmentation reveals that \"97% overall\" hides a failing field or document type. These axes localize where quality actually breaks.",
+      "Time matters only when something changed — the listed dimensions explain why.",
+      "Reviewer variance is worth knowing but doesn't localize pipeline failures."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Evaluation Loops"
+  },
+  {
+    "id": "q-s11-09",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "One test fails after a change. What should you ask Claude for?",
+    "options": [
+      "A targeted fix, providing the failing test name and its assertion message",
+      "A full rewrite of the module — a clean slate avoids compounding errors",
+      "An explanation of the module's design first",
+      "Deletion of the failing test if the code looks right"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Narrow failure, narrow fix. The exact failing test with its assertion is executable feedback pointing at the defect.",
+      "Rewrites after narrow failures introduce new regressions across everything that worked.",
+      "Sometimes useful context — but the direct path is the failing test.",
+      "Deleting the signal because the code \"looks right\" is how bugs ship."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Common Pitfalls (full rewrite after narrow failure)"
+  },
+  {
+    "id": "q-s11-10",
+    "section": 11,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A team sees repeated extraction failures and immediately starts building a custom validation microservice with a human-review dashboard. What pitfall is this?",
+    "options": [
+      "Under-investing — they should also build a retraining pipeline",
+      "Choosing the wrong cloud provider for the dashboard",
+      "Nothing — infrastructure is always the right response to quality issues",
+      "Adding infrastructure before improving examples and criteria — repeated failure patterns are usually solved by prompt/schema changes (few-shot examples, better absence semantics), which are cheaper and generalize"
+    ],
+    "answer": 3,
+    "rationales": [
+      "More infrastructure on top of unexamined failure patterns compounds the mistake.",
+      "The provider isn't the problem; the sequencing is.",
+      "Infrastructure has its place — after the cheap, high-leverage fixes are exhausted.",
+      "The guide's ordering: prompt and schema improvements first; heavier interventions only if the metric doesn't move. Most recurring patterns die at step one."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 11 > Common Pitfalls (infrastructure before examples)"
+  }
+]

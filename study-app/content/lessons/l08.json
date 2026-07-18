@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-08",
+    "section": 8,
+    "title": "Agentic Patterns and Task Decomposition",
+    "minutes": 9,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>An agent runs a loop: look at the situation, decide, act, look again. The architecture question is how to <em>structure</em> that loop for a given job — and the answer is never \"which pattern is best\" but \"<strong>which pattern matches the shape of this work</strong>.\"</p><p>Five shapes cover most cases. <strong>Prompt chaining</strong>: the steps are fixed and known (verify identity → fetch invoice → check policy). <strong>Routing</strong>: inputs fall into distinct categories needing different handling. <strong>Orchestrator-workers</strong>: a coordinator picks and delegates subtasks. <strong>Dynamic decomposition</strong>: an investigation where each discovery changes the plan (debugging an intermittent failure) — powerful but unpredictable, so set termination criteria and step caps. <strong>Parallel subagents</strong>: independent workstreams that can run simultaneously.</p><p>And sometimes the answer is <em>none of the above</em>: delegation costs a tool call, a fresh context, and a result handoff. \"Summarize these three sentences\" is coordinator work — spawning a subagent for it is slower and pricier than just doing it.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Forty vendor contracts, twelve identical clauses to audit, one deadline. This is <strong>partition-then-parallel</strong>: split the contracts across subagents, each returning the same structured output shape, then synthesize. Two subtleties decide whether it actually goes fast: balance partitions by <em>expected effort</em>, not count (elapsed time = the slowest partition), and remember each subagent starts with a <strong>blank slate</strong> — it sees only the prompt the parent constructs plus its own definition. No parent transcript, no prior tool results, no \"resume the last subagent.\" Every fact it needs must be in the handoff.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Multi-agent mechanics the exam checks:</p><ul><li><strong>Handoffs with citations</strong>: pass a structured source index (claims → source IDs, URLs, excerpts, dates, uncertainty), never just a prose summary. Never shuttle raw 100K-token outputs between agents.</li><li><strong>Tool distribution</strong>: match tools to roles — web researcher gets search/fetch; a synthesis agent working from supplied findings may need no external tools at all. In the Agent SDK, the parent needs the <code>Task</code>/<code>Agent</code> tool in its own <code>allowedTools</code>, or it cannot delegate at all.</li><li><strong>Phasing</strong>: serial decomposition → parallel execution → serial synthesis. The latency win is biggest for I/O-bound subtasks (max instead of sum of durations).</li><li><strong>State persistence</strong>: for resumable workflows, persist a structured manifest (completed steps, per-item status, open gaps), not transcripts.</li><li><strong>Provenance and time</strong>: subagents must output claims with source IDs and dates — undated statistics make trends look like contradictions.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Match the pattern to the work's shape: fixed → chain; findings-driven → dynamic; independent → parallel.",
+          "Don't delegate small work the coordinator can do — delegation has real overhead.",
+          "Subagents start blank: the constructed prompt IS their entire world.",
+          "Balance parallel partitions by effort; the slowest one sets total time.",
+          "Citations survive only if the handoff carries a structured claim→source index."
+        ]
+      }
+    ],
+    "resources": ["r-35", "r-29", "r-37"]
+  }
+]

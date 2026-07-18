@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-09",
+    "section": 9,
+    "title": "Customer Service and Production Workflow Design",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>A customer service agent juggles tools, policy, emotion, and risk at once. Its job description in one sentence: <strong>resolve what it can, escalate when it should, and communicate uncertainty honestly.</strong></p><p>Escalation is about the <em>nature</em> of the situation, never a counter. Escalate when the user asks for a human, when the issue needs authority the agent lacks, when a policy exception or high-value transaction appears, when progress stalls, or when a tool reports an uncertain or unsafe state. \"Escalate after three failed tools\" is blind to all of these — one uncertain payment write should escalate instantly; five harmless read timeouts shouldn't.</p><p>And when you do escalate, hand off <strong>structured context</strong>: who, what issue, the root cause found, record IDs, amounts, what's already been done, and a recommended next action. The human should start where the agent stopped — not where the customer started.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Policy: store credits over $200 need manager approval. The broken design puts the rule in the prompt and gives the tool an <code>approved_by_manager</code> flag — which the model itself sets. The audit finds exactly what you'd expect. The correct design removes the flag from the interface entirely: the tool reads the threshold from a <em>server-controlled</em> policy source, disburses below it, and above it returns a structured <code>requires_approval</code> result that routes to a manager. The model cannot bypass a parameter that doesn't exist. For the heaviest actions, add preview-then-execute with a short-lived, payload-bound, single-use token — and have every tool re-verify the caller's authority on every call. \"The model already checked policy\" is not a defense.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>The human-experience patterns:</p><ul><li><strong>Frustrated user demanding a human</strong>, but the fix is instant: acknowledge, then offer both — \"I can resolve this now, and I can also transfer you.\" Never silently act after they asked for a person; never run a long intake questionnaire.</li><li><strong>Graceful degradation</strong>: when a tool fails mid-workflow, report what's verified, what's pending, and how to finish. Users tolerate visible incompleteness; they do not tolerate discovering a \"completed\" action silently never happened.</li><li><strong>Repeated identical failure</strong> is a signal to switch strategies — different tool, clarifying question, or escalation — not to burn more retries.</li><li><strong>Defense-in-depth</strong>: prompt rules bias the agent, tool implementations enforce the policy, audit logs detect what slipped through. All three layers, because each covers the others' gaps.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Escalate on situation category and impact, never on failure counters.",
+          "Handoffs carry structure: root cause, records, actions taken, recommended next step.",
+          "Hard policy lives inside tools with server-controlled thresholds — no model-settable approval flags.",
+          "Partial completion: say what's done, what's pending, what's next — never claim unfinished side effects.",
+          "Defense-in-depth: prompts bias, tools enforce, audits detect."
+        ]
+      }
+    ],
+    "resources": ["r-02"]
+  }
+]

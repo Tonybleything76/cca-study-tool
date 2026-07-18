@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s02-01",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "What should a good tool description include?",
+    "options": [
+      "Only the parameter list — the name conveys the rest",
+      "Marketing-style language emphasizing the tool's power",
+      "What it does, when to use it, when NOT to use it, input formats, what the output contains, and limitations",
+      "Internal implementation details like which backend API it calls"
+    ],
+    "answer": 2,
+    "rationales": [
+      "The agent selects tools from descriptions; a bare parameter list omits the judgment cues (when / when not) that prevent misuse.",
+      "Persuasive language biases selection without informing it.",
+      "The agent's entire basis for choosing and invoking the tool is its name, description, schema, and examples — so the description must cover purpose, applicability, boundaries, formats, outputs, and limits.",
+      "Implementation details don't help the model decide when the tool is appropriate."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > What to Know (tool descriptions)"
+  },
+  {
+    "id": "q-s02-02",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A fitness app has one tool, `log_workout(type, value, unit)`, where cardio workouts need duration/distance and strength workouts need sets/reps/weight. Logs show frequent invalid combinations. What is the right fix?",
+    "options": [
+      "Add validation that rejects invalid combinations with an error message",
+      "Split into `log_cardio_session` and `log_strength_session` so each schema encodes its own required fields",
+      "Expand the description to enumerate valid combinations for each type",
+      "Make all parameters optional so no combination is invalid"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Post-hoc validation catches mistakes after the model makes them; better schemas prevent them from being expressible.",
+      "When operations have interdependent constraints, separate tools make the schema itself encode the distinction — invalid combinations become unrepresentable rather than merely discouraged.",
+      "Description prose asks the model to memorize rules the schema could enforce structurally.",
+      "That makes every invalid call schema-legal, trading visible failures for silent bad data."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 2 > Parameter Design (split tools)"
+  },
+  {
+    "id": "q-s02-03",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Users refer to projects by name, names are ambiguous, and a delete tool acts on whatever name string the model passes. An agent just deleted the wrong project. What is the correct pattern?",
+    "options": [
+      "Require the model to double-check the name with the user before every delete",
+      "Fuzzy-match names and act on the closest match above a similarity threshold",
+      "Add an \"are you sure?\" boolean parameter to the delete tool",
+      "Lookup-then-act: a search tool returns candidate IDs with distinguishing metadata; when multiple match, the user picks; the delete tool accepts only unambiguous IDs"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Per-call confirmation prompts add friction everywhere while the interface still permits acting on an ambiguous name.",
+      "Fuzzy matching automates the guess that caused the incident.",
+      "The model sets that boolean itself — it adds ceremony, not safety.",
+      "Resolving which entity via search + user selection, then acting only on stable IDs, removes name ambiguity from the destructive path entirely."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 2 > Parameter Design (lookup-then-act)"
+  },
+  {
+    "id": "q-s02-04",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A search tool finds nothing matching the query. What should it return?",
+    "options": [
+      "A successful result with an empty `results` array and a total count of zero",
+      "An `isError: true` result saying \"no matches found\"",
+      "Nothing — omit the tool result so the model moves on",
+      "A retryable error so the agent tries alternative phrasings"
+    ],
+    "answer": 0,
+    "rationales": [
+      "\"No matches\" is a valid answer, not a failure. A successful empty result tells the agent the query worked and the data simply isn't there.",
+      "Flagging it as an error invites the agent to retry a perfectly valid query as though the tool broke.",
+      "Tool calls must have results; omission is a protocol violation.",
+      "Encouraging retries conflates \"absent\" with \"failed\" — the classic empty-vs-error confusion."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > Output Design (empty vs error)"
+  },
+  {
+    "id": "q-s02-05",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A document search tool returns: \"Found these documents: Maintenance Schedule, Lab Access Plan, Vendor Notes.\" What is the main design problem?",
+    "options": [
+      "The response is too short to be useful",
+      "The tone is too informal for a tool result",
+      "No identifiers or structured fields — downstream tools can't act on prose titles, and the agent must guess how to reference each document",
+      "It should have returned the full text of each document"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Length isn't the issue — the same information structured would be excellent.",
+      "Tools aren't judged on tone; they're judged on machine-usability.",
+      "Tool results should be structured and carry the IDs the next decision needs (`document_id`, owner, updated_at). Prose-only output forces fragile title-matching downstream.",
+      "Returning full text wastes tokens; results should be compact and useful for the next decision."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 2 > Output Design"
+  },
+  {
+    "id": "q-s02-06",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A tool wraps an API whose queries can match thousands of records. How should it handle result volume?",
+    "options": [
+      "Fetch all pages so the agent has complete information",
+      "Return the first page plus a `total_count` and a cursor, fetching more only when actually needed",
+      "Return only the count and require a second call for any data",
+      "Cap results at 10 and silently drop the rest"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Auto-fetching everything burns latency and tokens and can blow the context on large matches — usually for items nobody needed.",
+      "First page + total + cursor gives the agent enough to decide whether more is worth fetching. Volume control stays a deliberate choice.",
+      "Forcing two calls for every query adds a turn to the common case.",
+      "Silent truncation misrepresents the result set; the agent can't know more exists."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 2 > Pagination"
+  },
+  {
+    "id": "q-s02-07",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "An agent platform has 80 connectors' worth of operations. Exposing them all degrades tool selection. Which design fixes this without hiding decisions from the agent?",
+    "options": [
+      "Group operations into ten mega-tools with an `operation` parameter",
+      "Keep all 80 exposed but sort the most-used first",
+      "Add a single `find_and_execute(task)` tool that searches for and runs the best operation",
+      "Discovery tools return a ranked shortlist of relevant operations, which are then dynamically added to the agent's available tools for subsequent turns"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Mega-tools recreate the free-form `action` parameter problem — schemas can no longer encode per-operation requirements.",
+      "Ordering doesn't reduce the choice set; selection accuracy still degrades with count.",
+      "Search-and-execute hides the final decision inside one call and can perform the wrong action before anyone can inspect it.",
+      "Progressive availability narrows choices while keeping execution a separate, inspectable step — the pattern the Agent SDK supports natively via tool search and dynamic registration."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > Large Tool Sets and Progressive Availability"
+  },
+  {
+    "id": "q-s02-08",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An ML-backed extraction tool returns per-field confidence scores. How should it help the agent decide what needs human review?",
+    "options": [
+      "Return the data plus a derived `requires_review` boolean with reasons, using thresholds calibrated against a labeled validation set",
+      "Return raw confidence scores and let the model judge each one",
+      "Round confidences to high/medium/low so the model has fewer values to reason about",
+      "Suppress fields below 0.9 confidence entirely"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Calibrated thresholds turn statistical scores into consistent decisions; the boolean plus reasons gives the agent an actionable signal instead of an interpretation problem.",
+      "Raw scores invite both over-trust and over-escalation — the model has no basis for knowing what 0.62 means for this pipeline.",
+      "Coarser buckets are still uncalibrated; the interpretation burden remains.",
+      "A hard cutoff hides potentially correct data and still embeds an uncalibrated threshold."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > Output: requires_review and Decision Hints"
+  },
+  {
+    "id": "q-s02-09",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A workspace-deletion operation must always be previewed by a human before executing. Which design actually enforces that?",
+    "options": [
+      "A `dry_run: true` default the model can override when the user seems sure",
+      "A system prompt rule: \"always preview deletions before executing\"",
+      "`preview_delete_workspace` returns the impact and a one-time confirmation token; `execute_delete_workspace` requires that token and verifies it matches the previewed action",
+      "Logging every deletion for weekly audit"
+    ],
+    "answer": 2,
+    "rationales": [
+      "The model controls the flag, so nothing structurally prevents `dry_run: false` on the first call.",
+      "Prompt rules are probabilistic; a must-always-hold invariant needs structural enforcement.",
+      "The two-tool token pattern makes execution *impossible* without a preview having happened — the sequence is enforced by the interface, not by model compliance.",
+      "Audit finds violations after the workspace is gone."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 2 > Safety and Confirmation"
+  },
+  {
+    "id": "q-s02-10",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "An agent can already run Bash. Why promote email-sending to a dedicated `send_email` tool anyway?",
+    "options": [
+      "Bash cannot make network calls in agent environments",
+      "A dedicated tool can be gated behind confirmation, rendered specially, audited, and safely parallelized — `bash -c \"curl -X POST ...\"` gives the application only an opaque string to inspect",
+      "Dedicated tools execute faster than shell commands",
+      "The model writes more reliable curl commands when a tool with the same name exists"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Bash typically can make network calls — that's exactly the problem.",
+      "The heuristic: promote an action to a dedicated tool when the application needs to intercept it. A structured `send_email` call can pass through approval and audit paths; an opaque command string cannot.",
+      "Speed isn't the distinction; interceptability is.",
+      "Tool existence doesn't improve unrelated shell commands."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > Where Tools Run (Bash vs dedicated tool)"
+  },
+  {
+    "id": "q-s02-11",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "Which pair of composition decisions is correct for (1) a booking system where slots can be taken between calls, and (2) a research workflow that retrieves sources and writes conclusions?",
+    "options": [
+      "(1) Combine availability-check and reserve into one atomic operation — separate calls create a race; (2) keep retrieval and conclusion-writing separate — the model must inspect sources and preserve provenance",
+      "(1) Keep check and reserve separate for auditability; (2) combine retrieve-and-conclude for efficiency",
+      "Combine both — fewer calls is always better",
+      "Separate both — composition is an anti-pattern"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Composition is for mechanical sequences and atomicity needs; separation is for judgment. Booking needs atomicity (the race is real); research needs the model between retrieval and writing.",
+      "Backwards on both counts: the separate booking calls are exactly what creates the race, and merging research steps hides required judgment.",
+      "Combining the research steps removes the inspection and provenance step the task needs.",
+      "Atomic check-and-book is a legitimate, sometimes necessary composition."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > Tool Composition"
+  },
+  {
+    "id": "q-s02-12",
+    "section": 2,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A neighborhood-info tool requires an address, so agents always call `get_property_details(property_id)` first just to extract the address and pass it along. What is the better design?",
+    "options": [
+      "Cache the address after the first lookup to speed up later calls",
+      "Combine both tools into one `get_property_with_neighborhood` call",
+      "Have the system prompt remind the agent to fetch details first",
+      "Have the neighborhood tool accept `property_id` directly and resolve the address internally — the intermediate hop is mechanical, requiring no model judgment"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Caching speeds the workaround instead of removing it.",
+      "Merging couples two capabilities that are separately useful; the actual problem is just the parameter choice.",
+      "Prompt guidance institutionalizes the unnecessary hop.",
+      "Prefer stable identifiers over derived intermediates: when a dependency is mechanical, the tool should resolve it internally, eliminating a lookup's latency and its failure coupling."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 2 > Parameter Design / Tool Composition (stable identifiers)"
+  }
+]

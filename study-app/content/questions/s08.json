@@ -1,0 +1,266 @@
+[
+  {
+    "id": "q-s08-01",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "A code review always runs the same three stages in order: style, security, documentation. Which agentic pattern fits?",
+    "options": [
+      "Prompt chaining — the steps are fixed and known",
+      "Dynamic decomposition — reviews are investigations",
+      "Parallel subagents — run all three at once",
+      "Orchestrator-workers — a coordinator should choose the stages"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Fixed workflows with known steps are chaining's home turf — the constraint buys reliability.",
+      "Nothing here depends on findings; the path never changes.",
+      "Plausible if stages are truly independent — but the canonical fit for a fixed known sequence is chaining, and later stages often build on earlier ones.",
+      "A coordinator choosing steps adds cost when the steps never vary."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Core Patterns"
+  },
+  {
+    "id": "q-s08-02",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Compare: (1) billing-dispute resolution that always runs verify identity → fetch invoice → check policy → propose adjustment; (2) security incident triage where the alert determines whether to pull logs, query a SIEM, page on-call, or all three. Which patterns match?",
+    "options": [
+      "Both dynamic decomposition — flexibility never hurts",
+      "Both prompt chaining — consistency matters in production",
+      "(1) prompt chaining; (2) dynamic decomposition — forcing chaining onto triage produces shallow analyses; forcing decomposition onto the fixed flow invites waste and inconsistency",
+      "(1) routing; (2) parallel subagents"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Dynamic plans on mechanical work waste coordinator effort and produce inconsistent outputs.",
+      "A pre-written checklist for triage runs every step regardless and misses the actual cause.",
+      "Match the pattern to the shape of the work: fixed sequence → chain it; findings-dependent investigation → let the coordinator decide the next move from evidence.",
+      "Neither problem is a categorization problem, and triage steps aren't independent."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 8 > Core Patterns (chaining vs dynamic contrast)"
+  },
+  {
+    "id": "q-s08-03",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Dynamic decomposition fits an investigation, but what is its cost, and what mitigates it?",
+    "options": [
+      "Higher token prices per call — mitigated by caching",
+      "Unpredictability — dynamic plans are harder to budget than fixed chains, so set explicit termination criteria and step caps",
+      "It requires a fine-tuned coordinator model",
+      "It cannot use tools — mitigated by resource injection"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Token pricing doesn't change by pattern.",
+      "The coordinator decides each next step from evidence, so cost and duration are open-ended by design. Bounds — termination criteria, step caps — keep the exploration budgetable.",
+      "No special model is needed.",
+      "Dynamic decomposition is tool-heavy by nature."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Core Patterns (dynamic decomposition trade-off)"
+  },
+  {
+    "id": "q-s08-04",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A coordinator has just retrieved three sentences and needs them summarized. Should it delegate to a subagent?",
+    "options": [
+      "Yes — delegation keeps the coordinator's context clean",
+      "Yes — specialized subagents summarize better",
+      "Only if a summarization subagent is already defined",
+      "No — each delegation costs a tool call, fresh context, separate invocation, and result passing; for small work already in context, the coordinator should just do it"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Three sentences don't threaten anyone's context.",
+      "No specialist advantage exists at this scale.",
+      "Existence of the subagent doesn't change the economics.",
+      "Delegation earns its overhead when the task would flood the coordinator's context, needs a different prompt/toolset, or can run in parallel. None applies here."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 8 > When the Coordinator Should Not Delegate"
+  },
+  {
+    "id": "q-s08-05",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A coordinator splits 50 repository audits across parallel subagents. Some repos are 100× larger than others. How should the partition be built?",
+    "options": [
+      "Equal counts — 10 repos per subagent, simple and fair",
+      "Balance partitions by expected effort, not raw count — total elapsed time is max(subagent durations), so one overloaded partition wastes all the parallelism",
+      "Give each subagent one repo and run 50 in parallel",
+      "Sort by size and process largest-first sequentially"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Equal counts with wildly unequal sizes means one subagent carries most of the work while others idle.",
+      "The slowest partition dictates the finish line. Balancing by size keeps every lane busy to the end.",
+      "Sometimes viable, but with shared rate limits and coordination overhead, effort-balanced chunks are the stated principle.",
+      "Sequential processing surrenders the parallelism entirely."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Parallel Subagents Across a Partition"
+  },
+  {
+    "id": "q-s08-06",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "What does a freshly spawned subagent see of its parent's conversation?",
+    "options": [
+      "Only what the parent explicitly passes in the prompt, plus its own definition (system prompt, allowed tools) — no parent turns, no prior tool results, and no memory of earlier subagent runs",
+      "The full parent transcript up to the spawn point",
+      "The parent's system prompt and the last five turns",
+      "Everything except tool results"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Subagents start fresh conversations. Everything they need — goal, findings, constraints, output shape — must be in the constructed prompt. \"Resume the previous subagent\" doesn't exist by default; continuity requires passing prior summaries or identifiers explicitly.",
+      "No automatic transcript sharing occurs.",
+      "No partial window is inherited either.",
+      "The exclusion isn't selective — nothing is inherited."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 8 > Multi-Agent Context Passing"
+  },
+  {
+    "id": "q-s08-07",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A report-writing subagent must produce an executive summary with citations. What should the coordinator hand it?",
+    "options": [
+      "The instruction \"synthesize the findings\" — subagents work best with autonomy",
+      "The raw transcripts of every research subagent",
+      "A structured source index mapping claims to source IDs, URLs, excerpts, dates, and uncertainty notes — not just a prose summary",
+      "The three most important findings, to keep the prompt short"
+    ],
+    "answer": 2,
+    "rationales": [
+      "A bare instruction with no materials produces a confident summary with invented structure.",
+      "Raw 100K-token outputs between agents is the anti-pattern — pass structured summaries plus indexes.",
+      "Citations require the claim→source mapping to physically exist in the handoff. Prose summaries destroy it; structure preserves it, along with dates and uncertainty.",
+      "Arbitrary truncation trades completeness for brevity at exactly the wrong stage."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Multi-Agent Context Passing (handoffs)"
+  },
+  {
+    "id": "q-s08-08",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which tool assignment is right for a synthesis subagent that should work only from supplied findings?",
+    "options": [
+      "All tools — flexibility prevents dead ends",
+      "The same tools as the research subagents, for consistency",
+      "Search tools only, in case it needs to verify claims",
+      "Possibly no external search tools at all — restricting tools keeps agents in role; more tools raise selection complexity and invite off-role behavior"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Every added tool is added selection complexity and a new way to wander off-task.",
+      "Its role differs from research; its toolset should too.",
+      "Fresh searching mid-synthesis undermines working from the vetted findings it was given.",
+      "Tool distribution follows role: web researcher gets search/fetch; document analyst gets read/extract; synthesizer may need nothing external at all."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Tool Distribution Across Agents"
+  },
+  {
+    "id": "q-s08-09",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In the Claude Agent SDK, subagent definitions exist but the orchestrator never delegates — it just answers directly. What is the classic cause?",
+    "options": [
+      "The subagents' system prompts are too long",
+      "The Task/Agent tool is missing from the parent's `allowedTools` — delegation is itself a tool call, and without it the parent has no way to launch subagents",
+      "The parent's temperature is set too low for delegation",
+      "Subagent definitions must be registered in `.mcp.json`"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Definition length doesn't gate delegation.",
+      "The mechanism is easy to miss: spawning a subagent happens through a tool (typically `Task` or `Agent`), which must be allowed on the parent. The subagent's own `allowedTools` is separate and constrains it after spawn.",
+      "Temperature doesn't control tool availability.",
+      "Subagents aren't MCP servers; `.mcp.json` is unrelated."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Tool Distribution (Task tool in allowedTools)"
+  },
+  {
+    "id": "q-s08-10",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "What is the common three-phase pattern for parallelizable work, and where does the latency win come from?",
+    "options": [
+      "Serial decomposition → parallel execution → serial synthesis; the win is largest for I/O-bound subtasks, where elapsed time becomes max(durations) instead of sum(durations)",
+      "Parallel decomposition → serial execution → parallel synthesis",
+      "Everything parallel from the first call — planning included",
+      "Serial throughout, with caching between phases"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Plan once (serial), fan out the independent units (parallel), assemble once (serial). Fetches, searches, and document reads overlap beautifully; CPU/token-bound work gains less. Balance the fan-out — the slowest subtask sets total time.",
+      "Decomposition before execution is inherently first, and synthesis needs all results — the phases can't invert.",
+      "You can't parallelize identifying what the parallel units are.",
+      "Serial throughout is what the pattern exists to beat."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Parallel Execution (phasing)"
+  },
+  {
+    "id": "q-s08-11",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A multi-day research workflow must resume after interruptions. What should be persisted and reloaded?",
+    "options": [
+      "Full transcripts of every agent, replayed on resume",
+      "Nothing — subagents should re-derive state from scratch",
+      "A structured manifest — workflow ID, completed steps, per-document status, claim IDs, open gaps — with only relevant state injected into each agent's prompt on resume",
+      "A screen recording of the prior session"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Replaying every transcript burns tokens on noise and still leaves state implicit.",
+      "Re-deriving repeats all the work the persistence was meant to save.",
+      "Durable state means structured exports. The coordinator loads the manifest and gives each agent only the slice it needs.",
+      "Not machine-usable state."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > State Persistence"
+  },
+  {
+    "id": "q-s08-12",
+    "section": 8,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "A synthesis agent reports two studies as \"contradictory\" — one says 45% adoption, the other 62%. The studies are three years apart. What was missing from the subagents' outputs?",
+    "options": [
+      "Longer excerpts from each study",
+      "Higher confidence scores",
+      "Consistent units",
+      "Publication/data-collection dates — without temporal provenance, a trend reads as a contradiction; subagents should output claim, source ID, date, methodology, and whether findings are established or contested"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Longer excerpts without dates still collide as contradictions.",
+      "Confidence doesn't resolve the time dimension.",
+      "The units matched; the years didn't.",
+      "Provenance structure exists precisely for this: dated claims let synthesis see 45% → 62% as growth. Undated claims force a false conflict."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 8 > Provenance, Time, and Uncertainty"
+  }
+]

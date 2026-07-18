@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-10",
+    "section": 10,
+    "title": "Claude Code and Claude Agent SDK Workflows",
+    "minutes": 10,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>Claude Code is the agentic coding tool; the Claude Agent SDK exposes the same machinery — agent loop, built-in tools, hooks, sessions, subagents, permissions, MCP — for building your own agents. This is the guide's biggest section because it's a toolbox, and the exam tests whether you grab the right tool.</p><p>The mental model that organizes everything: <strong>context vs enforcement</strong>. <code>CLAUDE.md</code> files, rules, and auto memory are <em>context</em> — the model reads them and tries to comply, with no guarantee. Hooks and permissions are <em>enforcement</em> — code that runs regardless of what the model decides. \"Never edit generated files\" written in CLAUDE.md is a hope; the same rule as a <code>PreToolUse</code> hook or <code>permissions.deny</code> entry is a fact.</p><p>The four soft/hard mechanisms map cleanly: every-session facts → <code>CLAUDE.md</code>; area-specific conventions → <code>.claude/rules/</code> with <code>paths:</code> globs (loads only when matching files are read); deliberate multi-step procedures → skills or slash commands; must-always-hold rules → hooks.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>You want to compare two implementations of a feature from the same starting point. Sessions store <em>conversation</em>, not files — so you need both halves: <code>--fork-session</code> gives each approach its own transcript branched from the shared state, and separate <strong>git worktrees</strong> give each its own files. Fork without worktrees and both attempts edit one checkout; worktrees without forking and the transcripts tangle. (Related flags: <code>--continue</code> grabs the latest conversation here — dangerous in a multi-task directory; <code>--resume</code> lets you pick; <code>--session-id</code> pins a UUID for automation.)</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Details the exam reaches for:</p><ul><li><strong>Loading mechanics</strong>: working-dir + ancestor CLAUDE.md load fully at launch; subdirectory ones load on demand; <code>@imports</code> expand at launch (organizational, not token-saving). <code>/memory</code> is the first diagnostic when rules seem ignored — confirm the file loads before rewording it; the <code>InstructionsLoaded</code> hook logs the details.</li><li><strong>Auto memory</strong>: first 200 lines / 25KB of MEMORY.md load at start; topic files on demand; machine-local, shared across the repo's worktrees.</li><li><strong>Task-scoped vs path-scoped</strong>: a release checklist is task-scoped (skill/slash command), not path-scoped — a paths-glob approximation fires whenever those files are touched, release or not.</li><li><strong>Skills vs slash commands</strong>: skills can self-trigger from task recognition and load their body on demand; slash commands are deliberate human acts.</li><li><strong>Plan mode vs extended thinking</strong>: workflow gating vs reasoning depth — different problems, combinable.</li><li><strong>Self-review</strong>: the session that wrote code is biased by its own reasoning; review in a fresh context, subagent, or CI.</li><li><strong>Hooks are code</strong>: they run with your privileges — vet third-party hook configs like any dependency.</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Memory is context; hooks and permissions are enforcement. Hard rules go in hooks.",
+          "CLAUDE.md = every session; rules+paths = area-specific; skills/commands = task-scoped; hooks = guarantees.",
+          "Compare approaches with fork-session AND worktrees — sessions don't isolate files.",
+          "Rules ignored? Check /memory loading first; wording was never the problem.",
+          "Review code in a context that didn't write it."
+        ]
+      }
+    ],
+    "resources": ["r-20", "r-22", "r-23", "r-24", "r-25", "r-17", "r-28", "r-21", "r-36"]
+  }
+]

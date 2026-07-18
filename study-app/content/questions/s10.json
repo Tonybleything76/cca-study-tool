@@ -1,0 +1,288 @@
+[
+  {
+    "id": "q-s10-01",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "In Claude Code, you need to find every file that CONTAINS the string `processRefund`. Which tool?",
+    "options": [
+      "Glob — it searches file patterns",
+      "Grep — it searches file contents; Glob is for finding files by name/path pattern",
+      "Read — open likely files and scan them",
+      "Bash with `find`"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Glob matches filenames and paths, not what's inside files.",
+      "Grep for text inside files, Glob for names and paths — using filename search to find code references is the classic mixup.",
+      "Reading files one by one is exploration by brute force.",
+      "`find` locates files by name; it doesn't search contents (that's what Grep wraps)."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Built-in Tool Selection"
+  },
+  {
+    "id": "q-s10-02",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which task calls for plan mode rather than direct execution?",
+    "options": [
+      "Fixing a typo in one README line",
+      "Renaming a local variable in one function",
+      "Adding a log statement to debug one code path",
+      "A migration spanning many files with architectural choices that stakeholders must approve before edits"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Tiny, low-risk, obvious target — plan mode is pure overhead here.",
+      "Same: small, localized, clear target.",
+      "Low-risk and easily reversed.",
+      "Multi-file scope, architecture decisions, approval gates, and read-only exploration first — every plan mode trigger at once. Plan mode gates the transition from thinking to doing."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 10 > Plan Mode vs Direct Execution"
+  },
+  {
+    "id": "q-s10-03",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "The agent keeps jumping straight to edits without surfacing trade-offs. Separately, its analyses of a gnarly concurrency bug feel shallow. Which mechanism addresses each?",
+    "options": [
+      "Plan mode for the edit-gating problem (workflow control); extended thinking / higher effort for the shallow analysis (reasoning quality) — they solve different problems and can combine",
+      "Extended thinking for both — more reasoning fixes everything",
+      "Plan mode for both — planning forces deeper analysis",
+      "Neither; both require a larger model"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Plan mode gates when actions happen and inserts human review; effort scales how hard the model reasons. One is workflow, one is cognition.",
+      "Thinking harder doesn't add an approval gate before edits.",
+      "Plan mode doesn't deepen reasoning on a hard problem — it sequences the workflow.",
+      "Both problems have dedicated mechanisms on the current model."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Plan Mode vs Extended Thinking"
+  },
+  {
+    "id": "q-s10-04",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "You want to evaluate two alternative implementations of a feature, starting from the same session state, without the attempts contaminating each other. What is the right setup?",
+    "options": [
+      "Resume the original session twice in two terminals",
+      "Copy-paste the context into two fresh sessions",
+      "`--fork-session` for each approach so transcripts diverge independently, AND separate git worktrees so the file changes don't collide — sessions persist conversation, not filesystem state",
+      "One session, alternating between the approaches"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Concurrent resumes of one session append to the same history and confuse later resumes.",
+      "Pasting loses tool-call history the fork preserves.",
+      "Fork isolates the conversations; worktrees isolate the files. Forking without file isolation leaves both editing one checkout; file isolation without forking tangles the transcripts.",
+      "Interleaved attempts in one transcript is exactly the contamination to avoid."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 10 > Sessions (fork + worktree)"
+  },
+  {
+    "id": "q-s10-05",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "You've worked on several unrelated tasks in this directory. You want to return to a specific investigation from last week. Which flag?",
+    "options": [
+      "`--continue` — it resumes your work",
+      "`--resume` — it lets you pick the specific session; `--continue` blindly grabs the most recent conversation, which may be the wrong one",
+      "`--session-id` with a new UUID",
+      "No flag — Claude Code auto-detects the intended session"
+    ],
+    "answer": 1,
+    "rationales": [
+      "`--continue` takes the latest session without prompting — in a multi-task directory, \"latest\" is often not \"the one you meant.\"",
+      "`--resume` opens a picker (or takes an identifier) for exactly this case: returning to a known, specific session.",
+      "A new UUID creates a fresh session — the opposite of resuming.",
+      "There is no intent detection; you choose."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Sessions (flags table)"
+  },
+  {
+    "id": "q-s10-06",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Why is the session that wrote the code often the wrong place to review it, and what is the alternative?",
+    "options": [
+      "Long sessions run out of tokens for review",
+      "Reviews require different API permissions",
+      "The writing session has no access to the diff",
+      "Its context includes the earlier reasoning, biasing it toward its own choices — use a fresh review context, a dedicated review subagent, CI review, or a separate session given the diff and criteria"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Token budget isn't the mechanism — bias is.",
+      "No permission difference exists.",
+      "It has full access — that's part of the problem.",
+      "Context isolation is the point: a reviewer that didn't watch the code being justified judges it on its merits."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Context Isolation and Self-Review"
+  },
+  {
+    "id": "q-s10-07",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "A team writes \"NEVER run destructive Bash commands without approval\" in CLAUDE.md and considers the risk handled. What is the correct assessment?",
+    "options": [
+      "CLAUDE.md is context, not enforcement — the model tries to follow it with no compliance guarantee; a `PreToolUse` hook or `permissions.deny` is the mechanism for must-always-hold rules",
+      "Handled — CLAUDE.md instructions are binding configuration",
+      "Handled if the same rule also appears in auto memory",
+      "Handled if the rule is written in all caps"
+    ],
+    "answer": 0,
+    "rationales": [
+      "Memory shapes behavior; hooks enforce it. Hooks run as code in your environment and cannot be talked around — which is exactly why hard rules belong there.",
+      "Nothing in CLAUDE.md is enforced; it's soft guidance the model reads.",
+      "Auto memory is also context — duplicating guidance doesn't create enforcement.",
+      "Capitalization aids salience, not compliance."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 10 > CLAUDE.md and Memory (memory vs hooks)"
+  },
+  {
+    "id": "q-s10-08",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "stretch",
+    "stem": "Which statement about CLAUDE.md loading is TRUE?",
+    "options": [
+      "All CLAUDE.md files in the entire repository load at launch",
+      "Only the single closest CLAUDE.md loads",
+      "Working-directory and ancestor CLAUDE.md files load fully at launch; subdirectory ones load on demand when files in those subtrees are read; `@imports` expand at launch, so they organize content but don't save tokens",
+      "Imports load lazily, so splitting CLAUDE.md via @imports reduces context cost"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Subtree files below the working directory wait until relevant files are read.",
+      "The whole ancestor chain loads, broader scopes first.",
+      "Three loading behaviors, one system: eager ancestors, lazy subdirectories, eagerly-expanded imports. The token-saving mechanism is path-scoped rules, not imports.",
+      "That's the trap — imports expand into context at launch."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > CLAUDE.md hierarchy"
+  },
+  {
+    "id": "q-s10-09",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "In `.claude/rules/`, what is the difference between a rule file WITH `paths:` frontmatter and one without?",
+    "options": [
+      "Without paths the rule is disabled",
+      "Without `paths:` the rule loads unconditionally every session (like `.claude/CLAUDE.md`); with `paths:` it enters context only when Claude reads files matching the globs",
+      "`paths:` controls which users receive the rule",
+      "`paths:` rules override CLAUDE.md; unscoped rules don't"
+    ],
+    "answer": 1,
+    "rationales": [
+      "No-paths rules are fully active — just always-on.",
+      "That's the scoping mechanism: area-specific conventions cost zero context until the area is actually touched.",
+      "Paths scope by file location, not by person.",
+      "Priority isn't the axis; loading condition is."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Claude rules for scoped instructions"
+  },
+  {
+    "id": "q-s10-10",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Which statement about Claude Code's auto memory is TRUE?",
+    "options": [
+      "It syncs across all your machines via your account",
+      "The entire memory directory loads at every session start",
+      "It is enforced configuration, unlike CLAUDE.md",
+      "The first 200 lines or 25KB of MEMORY.md load at session start; topic files load on demand; it is machine-local and shared across worktrees of the same repo"
+    ],
+    "answer": 3,
+    "rationales": [
+      "Auto memory does not sync across machines or cloud environments.",
+      "Only the MEMORY.md head loads eagerly — topic files wait until read.",
+      "It's context Claude maintains for itself — soft guidance like all memory.",
+      "Those are the operative limits and behaviors — including that all worktrees of one repository share a single memory directory."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Auto memory"
+  },
+  {
+    "id": "q-s10-11",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "When is a SKILL the right mechanism instead of a slash command?",
+    "options": [
+      "When the workflow should trigger from the nature of the task — Claude recognizes from the description that it applies (e.g., \"this is a database migration\") — while slash commands stay deliberate human acts",
+      "When the workflow needs more than ten steps",
+      "When the workflow must be enforced deterministically",
+      "Never — skills are deprecated in favor of slash commands"
+    ],
+    "answer": 0,
+    "rationales": [
+      "The dividing line is who initiates: skills can self-trigger from task recognition (and load their full body on demand — a 400-line checklist costs one description line until needed); slash commands run only when a human types them.",
+      "Length doesn't choose the mechanism.",
+      "Neither skills nor commands enforce — that's hooks.",
+      "Both are current, complementary mechanisms."
+    ],
+    "baselineEligible": true,
+    "sourceRef": "## 10 > Skills / Slash Commands"
+  },
+  {
+    "id": "q-s10-12",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "core",
+    "stem": "Claude keeps ignoring a project convention you're sure you wrote down. What is the FIRST diagnostic step?",
+    "options": [
+      "Rewrite the rule more forcefully with IMPORTANT markers",
+      "Duplicate the rule into every CLAUDE.md scope",
+      "Run `/memory` to confirm the file containing the rule is actually loaded for this working directory — if it isn't loading, no wording change will help; for lazy-loading rules, the `InstructionsLoaded` hook shows exactly what loaded and why",
+      "Disable auto memory in case it conflicts"
+    ],
+    "answer": 2,
+    "rationales": [
+      "Rewording a rule that never loads accomplishes nothing.",
+      "Duplication bloats every session and still doesn't diagnose the actual failure.",
+      "Check loading before wording: `/memory` lists every loaded CLAUDE.md, local file, and rule. Most \"Claude ignores my rules\" cases are loading-scope problems.",
+      "Auto memory rarely conflicts, and disabling it is a shot in the dark."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Inspecting and debugging memory"
+  },
+  {
+    "id": "q-s10-13",
+    "section": 10,
+    "type": "mcq",
+    "difficulty": "warmup",
+    "stem": "Before enabling a hook configuration from a third-party source, what should you do?",
+    "options": [
+      "Nothing — hooks run in a sandbox",
+      "Review it like any code with security implications — hooks execute in your environment and a malicious or buggy hook can damage your system or exfiltrate data",
+      "Test it with a read-only API key first",
+      "Enable it only for PostToolUse events, which are safe"
+    ],
+    "answer": 1,
+    "rationales": [
+      "Hooks are NOT sandboxed — they run as shell commands (or SDK callbacks) in your environment.",
+      "The power that makes hooks the right enforcement layer also makes them a supply-chain risk. Review before enabling; keep secrets out of arguments hooks might log.",
+      "API keys don't limit what a shell command can do to your filesystem.",
+      "PostToolUse hooks are just as much arbitrary code as any other."
+    ],
+    "baselineEligible": false,
+    "sourceRef": "## 10 > Hooks and Permissions (hook security)"
+  }
+]

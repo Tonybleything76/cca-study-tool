@@ -1,0 +1,33 @@
+[
+  {
+    "id": "l-07",
+    "section": 7,
+    "title": "Model Context Protocol (MCP)",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "plain",
+        "html": "<p>MCP is an open standard for plugging AI applications into external systems — think of it as USB for AI integrations. A company builds one <strong>MCP server</strong> for its ticketing system, and every MCP-capable client (Claude Code, desktop apps, custom agents) can use it. That reuse is the point: if five AI tools need the same data, build the server once. If only one app needs one bespoke workflow, a custom in-app tool is simpler.</p><p>Servers expose three kinds of things, distinguished by <em>who controls them</em>: <strong>tools</strong> (model-controlled actions — search, update, send), <strong>resources</strong> (application-controlled context — schemas, catalogs, docs), and <strong>prompts</strong> (user-invoked reusable workflows). The classic design question — \"resource or tool?\" — has a clean rule: stable reference material the agent consults before acting is a resource; dynamic computation at the moment of use is a tool. They're complements: resources say what's true, tools change it.</p><p>One thing MCP does NOT do: solve auth, rate limiting, retries, or caching. It's a protocol, not a middleware platform.</p>"
+      },
+      {
+        "type": "example",
+        "html": "<p>Your data-warehouse server exposes <code>get_schemas()</code> and <code>run_query(sql)</code>, and every session burns its first turn fetching schemas. Fix: expose the schemas as a <em>resource</em> the application provides as context, keep <code>run_query</code> as a tool. And when the agent ignores your specialized dependency-analysis tool in favor of generic shell commands, the fix is a better <em>description</em> — when to prefer it, inputs/outputs, its unique capabilities — not removing the generic tools the agent legitimately needs.</p>"
+      },
+      {
+        "type": "examLevel",
+        "html": "<p>Exam-grade specifics:</p><ul><li><strong>Annotations are not security.</strong> <code>readOnlyHint</code>, <code>destructiveHint</code>, etc. are unverified server self-reports — use them to pick which confirmation UI to show, never to skip a required security check.</li><li><strong>Scaling the surface</strong>: tool search / progressive availability loads tool definitions on demand; <code>list_changed</code> notifications let servers announce new capabilities mid-session. Write descriptions that read well in isolation.</li><li><strong>Claude Code scopes</strong>: project (<code>.mcp.json</code>, checked in, team-shared), local (<code>~/.claude.json</code> keyed to the project — personal credentials, experiments), user (<code>~/.claude.json</code> global — personal tools everywhere). Same name at multiple scopes → one connection, precedence <strong>local &gt; project &gt; user</strong>, whole entry wins, no field merging. Personal credentials never belong in project scope.</li><li>MCP prompts surface as slash commands (<code>mcp__server__prompt</code>).</li></ul>"
+      },
+      {
+        "type": "takeaways",
+        "items": [
+          "Resource = stable reference consulted before acting; tool = dynamic computation. Expose both.",
+          "MCP's value is reuse across clients; it solves integration shape, not auth/retries/caching.",
+          "Agent ignoring your tool? Fix the description, don't delete the generic tools.",
+          "Annotations are untrusted hints — UI affordances yes, skipped security checks never.",
+          "Scopes: project is shared via the repo; local/user stay on your machine; local > project > user."
+        ]
+      }
+    ],
+    "resources": ["r-30", "r-31", "r-33", "r-27"]
+  }
+]
