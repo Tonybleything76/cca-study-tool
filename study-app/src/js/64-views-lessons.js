@@ -26,7 +26,7 @@ APP.router.register("lesson", function (route, root) {
   }
   const blockLabel = { plain: "The idea", example: "How it works with Claude", examLevel: "Exam depth", takeaways: "Key takeaways" };
   root.innerHTML = '<div class="card"><span class="eyebrow">Lesson ' + sec + "</span><h1>" + APP.ui.esc(lesson.title) + "</h1>" +
-    '<p class="muted small">~' + lesson.minutes + " min · Section " + sec + " of 15</p></div>" +
+    '<p class="muted small">~' + lesson.minutes + " min · " + (sec === 0 ? "Foundations" : "Section " + sec + " of 15") + "</p></div>" +
     lesson.blocks.map((b) => {
       if (b.type === "takeaways") {
         return '<div class="card"><span class="eyebrow">' + blockLabel.takeaways + "</span><ul>" +

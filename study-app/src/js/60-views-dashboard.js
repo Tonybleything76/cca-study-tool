@@ -19,7 +19,7 @@ APP.router.register("dashboard", function (route, root) {
   if (!hasBaseline) {
     html += '<div class="card"><span class="eyebrow">Start here</span>' +
       "<h2>Take the baseline assessment</h2>" +
-      '<p class="muted">30 questions, two per section, about 35–45 minutes. No feedback during — it measures where you are today so the study plan knows what to prioritize. You only do this once.</p>' +
+      '<p class="muted">' + (APP.content.sections.length * 2) + ' questions, two per section, about 35–45 minutes. No feedback during — it measures where you are today so the study plan knows what to prioritize. You only do this once.</p>' +
       '<a class="btn primary" href="#/baseline">Start baseline</a></div>';
   }
 

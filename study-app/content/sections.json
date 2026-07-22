@@ -1,4 +1,5 @@
 [
+  { "num": 0,  "title": "Foundations: Reading the Language",                "short": "Foundations" },
   { "num": 1,  "title": "API Fundamentals and Output Control",              "short": "API Output Control" },
   { "num": 2,  "title": "Designing Tool Interfaces for LLM Agents",         "short": "Tool Design" },
   { "num": 3,  "title": "Error Handling in Agent Tools",                    "short": "Error Handling" },

@@ -57,8 +57,8 @@ def check_question(q, where, ids):
     if q["id"] in ids:
         err(f"{where}: duplicate id {q['id']}")
     ids.add(q["id"])
-    if not (isinstance(q["section"], int) and 1 <= q["section"] <= 15):
-        err(f"{where}: section must be 1–15, got {q['section']}")
+    if not (isinstance(q["section"], int) and 0 <= q["section"] <= 15):
+        err(f"{where}: section must be 0–15, got {q['section']}")
     if q["type"] not in ("mcq", "scenario"):
         err(f"{where}: bad type {q['type']}")
     if q["difficulty"] not in DIFFICULTIES:
@@ -82,8 +82,8 @@ def main():
     all_questions = []
 
     sections = load(CONTENT / "sections.json") or []
-    if len(sections) != 15:
-        err(f"sections.json: expected 15 sections, found {len(sections)}")
+    if len(sections) != 16:
+        err(f"sections.json: expected 16 sections (0–15), found {len(sections)}")
 
     qdir = CONTENT / "questions"
     for path in sorted(qdir.glob("*.json")) if qdir.exists() else []:
@@ -121,8 +121,8 @@ def main():
                 ids.add(c["id"])
                 if c["source"] not in CARD_SOURCES:
                     err(f"{where}: bad source {c['source']}")
-                if not (isinstance(c["section"], int) and 1 <= c["section"] <= 15):
-                    err(f"{where}: section must be 1–15")
+                if not (isinstance(c["section"], int) and 0 <= c["section"] <= 15):
+                    err(f"{where}: section must be 0–15")
                 all_cards.append(c)
 
     resources = load(CONTENT / "resources.json") or []
@@ -193,7 +193,7 @@ def main():
     q_by_sec = Counter(q["section"] for q in all_questions)
     c_by_sec = Counter(c["section"] for c in all_cards)
     l_secs = {l["section"] for l in lessons}
-    for s in range(1, 16):
+    for s in range(0, 16):
         if q_by_sec[s] < 10:
             report(f"section {s}: only {q_by_sec[s]} questions (target ≥10)")
         eligible = sum(1 for q in all_questions

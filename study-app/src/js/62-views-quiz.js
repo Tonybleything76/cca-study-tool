@@ -198,8 +198,8 @@ APP.quiz.results = function (root, session, opts) {
 
 APP.router.register("baseline", function (route, root) {
   root.innerHTML = '<div class="card"><span class="eyebrow">Baseline assessment</span>' +
-    "<h2>30 questions, no feedback until the end</h2>" +
-    '<p class="muted">Two questions from each of the 15 sections. Answer honestly — guessing wildly just makes your study plan less useful. Takes about 35–45 minutes, untimed.</p>' +
+    "<h2>" + (APP.content.sections.length * 2) + " questions, no feedback until the end</h2>" +
+    '<p class="muted">Two questions from each of the ' + APP.content.sections.length + ' sections. Answer honestly — guessing wildly just makes your study plan less useful. Takes about 35–45 minutes, untimed.</p>' +
     '<button class="btn primary" id="start">Begin</button></div>';
   root.querySelector("#start").addEventListener("click", () => {
     const questions = APP.engine.selectBaseline();
@@ -221,7 +221,7 @@ APP.router.register("baseline", function (route, root) {
 APP.router.register("exam-intro", function (route, root) {
   root.innerHTML = '<div class="card"><span class="eyebrow">Timed exam</span>' +
     "<h2>40 questions · 60 minutes</h2>" +
-    '<p class="muted">Covers all 15 sections, with extra questions from your weakest areas. No feedback until you submit. The timer runs on the clock — refreshing the page won’t pause it. Auto-submits at zero.</p>' +
+    '<p class="muted">Covers all sections, with extra questions from your weakest areas. No feedback until you submit. The timer runs on the clock — refreshing the page won’t pause it. Auto-submits at zero.</p>' +
     '<a class="btn primary" href="#/exam">Start exam</a></div>';
 });
 

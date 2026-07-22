@@ -12,11 +12,11 @@ Your progress (baseline scores, quiz history, flashcard schedule, streak) is sto
 
 ## What's inside
 
-- **Baseline assessment** — 30 questions (2 per section) that score you across all 15 knowledge areas and seed your study plan
+- **Baseline assessment** — 32 questions (2 per section) that score you across all 16 knowledge areas and seed your study plan
 - **Study plan** — a ranked "study this next" list, re-sorted after every session by weakness, staleness, and due flashcards
-- **15 lessons** — each starts from zero LLM experience, shows how the concept works with Claude, then goes to exam depth
-- **185 practice questions** — with per-option explanations, playable as a timed 40-question exam, untimed practice, or per-section drills
-- **136 flashcards** — Leitner spaced repetition: cards you miss come back sooner
+- **16 lessons** — starting with a Level 0 "Foundations: Reading the Language" section that teaches the vocabulary and notation (JSON, code snippets, the request lifecycle) the rest of the course assumes; every lesson starts from zero LLM experience and goes to exam depth
+- **197 practice questions** — with per-option explanations, playable as a timed 40-question exam, untimed practice, or per-section drills
+- **154 flashcards** — Leitner spaced repetition: cards you miss come back sooner
 - **Glossary** — 77 technical terms and acronyms decoded in plain English, with "how to read it in context" guidance
 - **Progress tracker** — mastery per section vs. your baseline, score trend, and streak calendar
 
